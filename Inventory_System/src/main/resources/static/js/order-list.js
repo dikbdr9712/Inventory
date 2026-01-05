@@ -1,12 +1,37 @@
 // js/order-list.js
 
+let allOrders = []; // Store raw data
+let currentFilter = 'needs-action'; // Default view
+
 // Utility: format date
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleString();
 }
 
-// Fetch and render orders
+// Determine if an order needs action
+function needsAction(order) {
+  const status = order.orderStatus;
+  const payment = order.paymentStatus;
+
+  // Needs action if:
+  // - Payment is pending
+  // - Paid but not confirmed (CREATED)
+  // - Confirmed but not shipped
+  // - Shipped but not completed
+  // - Any unknown/undefined state
+
+  if (payment === 'PENDING') return true;
+  if (payment === 'PAID' && status === 'CREATED') return true;
+  if (status === 'CONFIRMED') return true;
+  if (status === 'SHIPPED') return true;
+  if (!status || status === 'UNKNOWN' || status === 'PENDING') return true;
+
+  // COMPLETED, CANCELLED → no action needed
+  return false;
+}
+
+// Fetch and store orders
 async function loadOrders() {
   try {
     const res = await fetch('http://localhost:8080/api/admin/orders', { credentials: 'include' });
@@ -18,8 +43,16 @@ async function loadOrders() {
     }
     if (!res.ok) throw new Error('Failed to load orders');
 
-    const orders = await res.json();
-    renderOrders(orders);
+    allOrders = await res.json();
+    const needsActionCount = allOrders.filter(needsAction).length;
+    const totalCount = allOrders.length;
+    const needsBtn = document.getElementById('btn-needs-action');
+    const allBtn = document.getElementById('btn-all-orders');
+
+    needsBtn.textContent = `Needs Action (${needsActionCount})`;
+    allBtn.textContent = `All Orders (${totalCount})`;
+
+    applyFilter(); // Render based on current filter
   } catch (error) {
     console.error('Load orders error:', error);
     document.getElementById('orders-container').innerHTML = 
@@ -27,9 +60,26 @@ async function loadOrders() {
   }
 }
 
+// Apply current filter and render
+function applyFilter() {
+  let filteredOrders = [];
+  
+  if (currentFilter === 'needs-action') {
+    filteredOrders = allOrders.filter(needsAction);
+  } else {
+    filteredOrders = [...allOrders];
+  }
+
+  renderOrders(filteredOrders);
+}
+
 function renderOrders(orders) {
+  const container = document.getElementById('orders-container');
+  
   if (!orders || orders.length === 0) {
-    document.getElementById('orders-container').innerHTML = '<p class="text-muted">No orders yet.</p>';
+    container.innerHTML = currentFilter === 'needs-action'
+      ? '<p class="text-muted">No orders need your attention right now.</p>'
+      : '<p class="text-muted">No orders yet.</p>';
     return;
   }
 
@@ -46,7 +96,7 @@ function renderOrders(orders) {
         </div>
         <span class="badge ${getBadgeClass(order.orderStatus)}">${order.orderStatus || 'UNKNOWN'}</span>
       </div>
-      <div class "card-body">
+      <div class="card-body">
         <p><small>Created: ${order.createdAt ? formatDate(order.createdAt) : 'Unknown'}</small></p>
         
         <table class="table table-sm">
@@ -82,13 +132,15 @@ function renderOrders(orders) {
     </div>
   `).join('');
 
-  document.getElementById('orders-container').innerHTML = html;
+  container.innerHTML = html;
 }
 
 function getBadgeClass(status) {
   switch (status) {
     case 'PENDING': return 'bg-warning text-dark';
+    case 'CREATED': return 'bg-secondary'; // or bg-light text-dark
     case 'CONFIRMED': return 'bg-info text-dark';
+    case 'SHIPPED': return 'bg-primary';
     case 'COMPLETED': return 'bg-success';
     case 'CANCELLED': return 'bg-secondary';
     default: return 'bg-danger';
@@ -96,110 +148,64 @@ function getBadgeClass(status) {
 }
 
 function getActionButtons(order) {
-    let buttons = '';
+  let buttons = '';
 
-    // Step 1: Payment Pending → Show "Confirm Payment"
-    if (order.paymentStatus === 'PENDING') {
-        buttons += `
-            <button class="btn btn-warning btn-sm me-2" 
-                    onclick="confirmPayment(${order.orderId})">
-                Confirm Payment
-            </button>`;
+  if (order.paymentStatus === 'PENDING') {
+    buttons += `<button class="btn btn-warning btn-sm me-2" onclick="confirmPayment(${order.orderId})">Confirm Payment</button>`;
+  }
+  else if (order.paymentStatus === 'PAID' && order.orderStatus === 'CREATED') {
+    const allInStock = order.items.every(item => item.stockAvailable >= item.quantityOrdered);
+    if (allInStock) {
+      buttons += `<button class="btn btn-success btn-sm me-2" onclick="confirmOrder(${order.orderId})">Confirm Order</button>`;
+    } else {
+      buttons += `
+        <button class="btn btn-danger btn-sm me-2" disabled>❌ Insufficient Stock</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="handlePartialOrder(${order.orderId})">Resolve Partial</button>`;
     }
-    // Step 2: Payment Received → Verify Stock → Confirm
-    else if (order.paymentStatus === 'PAID' && order.orderStatus === 'CREATED') {
-        const allInStock = order.items.every(item => 
-            item.stockAvailable >= item.quantityOrdered
-        );
+  }
+  else if (order.orderStatus === 'CONFIRMED') {
+    buttons += `<button class="btn btn-info btn-sm me-2" onclick="shipOrder(${order.orderId})">Ship Order</button>`;
+  }
+  else if (order.orderStatus === 'SHIPPED') {
+    buttons += `<button class="btn btn-primary btn-sm" onclick="completeOrder(${order.orderId})">Mark Delivered</button>`;
+  }
 
-        if (allInStock) {
-            buttons += `
-                <button class="btn btn-success btn-sm me-2" 
-                        onclick="confirmOrder(${order.orderId})">
-                    Confirm Order
-                </button>`;
-        } else {
-            buttons += `
-                <button class="btn btn-danger btn-sm me-2" disabled>
-                    ❌ Insufficient Stock
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" 
-                        onclick="handlePartialOrder(${order.orderId})">
-                    Resolve Partial
-                </button>`;
-        }
-    }
-    // Step 3: Confirmed → Ship
-    else if (order.orderStatus === 'CONFIRMED') {
-        buttons += `
-            <button class="btn btn-info btn-sm me-2" 
-                    onclick="shipOrder(${order.orderId})">
-                Ship Order
-            </button>`;
-    }
-    // Step 4: Shipped → Complete
-    else if (order.orderStatus === 'SHIPPED') {
-        buttons += `
-            <button class="btn btn-primary btn-sm" 
-                    onclick="completeOrder(${order.orderId})">
-                Mark Delivered
-            </button>`;
-    }
-
-    return buttons;
+  return buttons;
 }
 
-// === ACTION HANDLERS ===
+// === ACTION HANDLERS (unchanged) ===
 async function confirmPayment(orderId) {
-    if (!confirm('Confirm payment received for this order?')) return;
-    await performOrderAction(orderId, 'confirm-payment');
+  if (!confirm('Confirm payment received for this order?')) return;
+  await performOrderAction(orderId, 'confirm-payment');
 }
-
 async function handlePartialOrder(orderId) {
-    alert('Partial fulfillment: Cancel out-of-stock items or backorder?');
+  alert('Partial fulfillment: Cancel out-of-stock items or backorder?');
 }
-
 async function confirmOrder(orderId) {
-    if (!confirm('Confirm this order? Stock will be deducted.')) return;
-    await performOrderAction(orderId, 'confirm');
+  if (!confirm('Confirm this order? Stock will be deducted.')) return;
+  await performOrderAction(orderId, 'confirm');
 }
-
 async function cancelOrder(orderId) {
-    if (!confirm('Cancel this order?')) return;
-    await performOrderAction(orderId, 'cancel');
+  if (!confirm('Cancel this order?')) return;
+  await performOrderAction(orderId, 'cancel');
 }
-
 async function shipOrder(orderId) {
-    if (!confirm('Assign shipment ID and mark as shipped?')) return;
-    await performOrderAction(orderId, 'ship');
+  if (!confirm('Assign shipment ID and mark as shipped?')) return;
+  await performOrderAction(orderId, 'ship');
 }
-
 async function completeOrder(orderId) {
-    if (!confirm('Mark as completed?')) return;
-    await performOrderAction(orderId, 'complete');
+  if (!confirm('Mark as completed?')) return;
+  await performOrderAction(orderId, 'complete');
 }
-
-// === API CALLER ===
 async function performOrderAction(orderId, action) {
   let endpoint;
   switch (action) {
-    case 'confirm-payment':
-      endpoint = `/api/orders/${orderId}/confirm-payment`;
-      break;
-    case 'confirm':
-      endpoint = `/api/orders/${orderId}/confirm`;
-      break;
-    case 'cancel':
-      endpoint = `/api/orders/${orderId}/cancel`;
-      break;
-    case 'ship':
-      endpoint = `/api/orders/${orderId}/ship`;
-      break;
-    case 'complete':
-      endpoint = `/api/orders/${orderId}/complete`;
-      break;
-    default:
-      throw new Error(`Unknown action: ${action}`);
+    case 'confirm-payment': endpoint = `/api/orders/${orderId}/confirm-payment`; break;
+    case 'confirm': endpoint = `/api/orders/${orderId}/confirm`; break;
+    case 'cancel': endpoint = `/api/orders/${orderId}/cancel`; break;
+    case 'ship': endpoint = `/api/orders/${orderId}/ship`; break;
+    case 'complete': endpoint = `/api/orders/${orderId}/complete`; break;
+    default: throw new Error(`Unknown action: ${action}`);
   }
 
   try {
@@ -215,7 +221,7 @@ async function performOrderAction(orderId, action) {
     }
 
     if (res.ok) {
-      loadOrders(); // refresh
+      loadOrders(); // reload full data and re-apply filter
     } else {
       const errorText = await res.text();
       alert(`Failed to ${action} order: ${errorText}`);
@@ -225,5 +231,22 @@ async function performOrderAction(orderId, action) {
   }
 }
 
-// Load on page load
-document.addEventListener('DOMContentLoaded', loadOrders);
+// === FILTER BUTTON HANDLERS ===
+document.addEventListener('DOMContentLoaded', () => {
+  loadOrders();
+
+  // Set up filter buttons
+  document.getElementById('btn-needs-action').addEventListener('click', () => {
+    currentFilter = 'needs-action';
+    document.getElementById('btn-needs-action').classList.add('active');
+    document.getElementById('btn-all-orders').classList.remove('active');
+    applyFilter();
+  });
+
+  document.getElementById('btn-all-orders').addEventListener('click', () => {
+    currentFilter = 'all';
+    document.getElementById('btn-all-orders').classList.add('active');
+    document.getElementById('btn-needs-action').classList.remove('active');
+    applyFilter();
+  });
+});
