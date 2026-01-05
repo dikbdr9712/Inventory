@@ -1,0 +1,59 @@
+
+#ContactUs{
+  color: black;
+  text-align: center;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+#container{
+  display: flex;
+  width: 100%;
+  height: 50%;
+  justify-content: center;
+}
+#infoContainer{
+  margin: 10px;
+  box-shadow: 2px 2px 2px 2px gray;
+  width: 40%;
+}
+#innerinfoContainer{
+  padding:8%;
+  width: 100%;
+}
+ #formContainer{
+  width: 40%;
+  margin: 10px;
+  box-shadow: 2px 2px 2px 2px gray;
+ }
+ #innerformContainer{
+  padding: 10px;
+ }
+h3 {
+color:black;
+  font-family: cursive;
+}
+
+#three{
+  color:black;
+}
+div {
+color:black;
+}
+#map{
+  width: 100%;
+  height: 400px;
+  padding: 15px;
+  overflow: hidden;
+}
+#SUBMIT{
+  display: block;
+  margin: 0 auto;
+}
+
+h3{
+  color: white;
+  margin-top: 10px;
+}
+
+
+
+

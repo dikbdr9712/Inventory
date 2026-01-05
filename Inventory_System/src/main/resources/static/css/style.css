@@ -1,0 +1,199 @@
+/* Logo */
+.Logo {
+  height: 50px;
+  width: auto;
+}
+
+/* Body */
+body {
+  scroll-behavior: smooth;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.6;
+  color: #2E2E2E;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.navbar-brand img {
+  height: 50px;
+  width: auto;
+}
+
+.nav-link {
+  font-weight: 500;
+}
+
+/* Carousel */
+.carousel-item img {
+  height: 60vh;
+  object-fit: cover;
+}
+
+/* Welcome Section */
+.container .lead {
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Quote */
+.blockquote {
+  font-style: italic;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+/* Flex Section */
+#flex {
+  display: flex;
+  flex-direction: row;
+  margin: 15px;
+}
+
+#ImgPara {
+  height: 40%;
+  width: 40%;
+  margin: 15px;
+}
+
+#ParaHarbel {
+  margin: 5px;
+  text-align: justify;
+  font-size: 16px;
+}
+
+/* Products */
+#ProductHeading {
+  text-align: center;
+  width: 100%;
+  margin: 5px;
+  padding: 30px;
+}
+
+
+#ImgContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 100px;
+}
+
+.PImgContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  width: 30%;
+  margin: 10px;
+  box-sizing: border-box;
+  box-shadow: 5px 5px 5px 5px gray;
+}
+
+h4 {
+  text-align: center;
+}
+
+/* Read More Button */
+#ReadMore {
+  display: block;
+  margin: 0 auto;
+  padding: 10px;
+  text-align: center;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* Footer */
+#Ani {
+  background-color: rgb(221, 222, 224);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  justify-content: center;
+}
+
+h3 {
+  color: white;
+  margin-top: 10px;
+}
+
+.fa-regular {
+  margin-top: 10px;
+}
+
+.animatedboy {
+  width: 90%;
+}
+
+.Boy{
+  width: 30%;
+  animation-name: dezang;
+  animation-duration: 10s;
+  animation-iteration-count:infinite;
+  position: relative;
+  padding: 30px;
+  margin: 4%;
+}
+
+@keyframes dezang {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+footer {
+  height: 10%;
+  width: 100%;
+  color: #070505;
+  text-align: center;
+  position: relative;
+  top: 10px;
+}
+
+/* Responsive */
+@media screen and (max-width: 480px) {
+  #GroupImg {
+    width: 100%;
+  }
+
+  #Apple {
+    height: 100px;
+    width: 100px;
+  }
+
+  div#flex {
+    display: flex;
+    flex-direction: column;
+  }
+
+  div#flex img {
+    width: 75%;
+    display: block;
+    margin: 0 auto;
+  }
+
+  #ImgContainer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .PImgContainer {
+    width: 70%;
+  }
+
+  #Ani {
+    display: flex;
+    flex-direction: column;
+  }
+}

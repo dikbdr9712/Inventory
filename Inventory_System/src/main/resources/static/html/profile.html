@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Account</title>
+  <link rel="stylesheet" href="../css/profile.css" />
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <script src="authNav.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+    <a class="navbar-brand" href="Index.html"><img src="../Images/Websites logo(Online).png" class="Logo" alt=""/></a>
+    <!-- Hamburger Icon -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Nav Items -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link text-dark" href="Index.html"><b></b>Home</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="About.html"><b></b>About Us</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="Services.html"><b></b>Services</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="Product.html"><b></b>Product</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="orders.html"><b></b>My orders</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="Contact.html"><b></b>Contact Us</a></li>
+        <li class="nav-item"><a id="loginLink"  class="nav-link text-dark" href="login.html"><b>Login / Register</b></a></li>
+      </ul>
+    </div>
+  </nav>
+  
+  <div class="container_">
+    <h1>My Account</h1>
+    
+    <div class="profile-section">
+      <h2>Personal Information</h2>
+      <p><strong>Name:</strong> <span id="userName"></span></p>
+      <p><strong>Email:</strong> <span id="userEmail"></span></p>
+      <p><strong>Phone:</strong> <span id="userPhone"></span></p>
+    </div>
+
+    <div class="actions">
+      <button id="editProfileBtn">Edit Profile</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+  <footer class="bg-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <!-- Info -->
+        <div class="col-md-4 text-center text-md-left mb-3 mb-md-0">
+          <h5>DK/Phar Inventory Management System</h5>
+          <p class="text-muted small">
+            Phone: 77269712<br />
+            Email: dikbdrghalley12@gmail.com<br />
+            Thimphu/Phuentsholing, Bhutan
+          </p>
+        </div>
+
+        <!-- Social -->
+        <div class="col-md-4 text-center mb-3 mb-md-0">
+          <h6>Follow us</h6>
+          <div class="d-flex justify-content-center gap-3 mt-2">
+            <a href="https://www.facebook.com/pharmith.lepcha.2025" class="text-decoration-none">
+              <i class="fa-brands fa-facebook fa-2x" style="color: #3053ab;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-instagram fa-2x" style="color: #d01b8d;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-youtube fa-2x" style="color: #f90b47;"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Mascot -->
+        <div class="col-md-4 text-center">
+          <img
+            src="../Images/thumbBoy-removebg-preview.png"
+            alt="Support"
+            class="img-fluid"
+            style="max-height: 120px;"
+          />
+        </div>
+      </div>
+      <hr class="my-4" />
+      <div class="text-center text-muted">
+        &copy; Inventory Management System 2025
+      </div>
+    </div>
+  </footer>
+  <script src="../js/profile.js"></script>
+</body>
+</html>

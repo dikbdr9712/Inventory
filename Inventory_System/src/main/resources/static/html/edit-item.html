@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Item</title>
+  <link rel="stylesheet" href="../css/edit-item.css" />
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>Edit Item</h2>
+
+    <form id="editItemForm" enctype="multipart/form-data"  method="post">
+      <input type="hidden" id="itemId" value="" />
+
+      <div class="form-group">
+        <label for="itemName">Item Name *</label>
+        <input type="text" class="form-control" id="itemName" required />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="uom">UOM</label>
+          <select class="form-control" id="uom">
+            <option value="pcs">pcs</option>
+            <option value="kg">kg</option>
+            <option value="ltr">ltr</option>
+          </select>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="pricePerUnit">Price Per Unit (Nu.)</label>
+          <input type="number" class="form-control" id="pricePerUnit" step="0.01" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="barcode">Barcode</label>
+          <input type="text" class="form-control" id="barcode" />
+        </div>
+        <div class="form-group col-md-6">
+          <label for="supplierItemCode">Supplier Item Code</label>
+          <input type="text" class="form-control" id="supplierItemCode" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="imageFile">Product Image</label>
+        <div>
+          <img id="currentImage" src="../Images/default.jpg" alt="Current Image" class="img-preview" />
+          <input type="file" class="form-control-file" id="imageFile" accept="image/*" />
+          <small class="form-text text-muted">Recommended: JPG/PNG, under 2MB</small>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Update Item</button>
+      <button type="button" onclick="
+      if (window.history.length > 1) {
+        window.history.back();
+      }">← Go Back</button>
+    </form>
+
+    <div id="message" class="mt-3 alert" style="display:none;"></div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script src="../js/edit-item.js"></script>
+</body>
+</html>

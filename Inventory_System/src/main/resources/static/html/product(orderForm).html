@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../css/product(orderForm).css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <script src="https://kit.fontawesome.com/33616e440d.js" crossorigin="anonymous"></script>
+    <link
+      rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"/>
+  </head>
+  <body>
+
+    <!-- Hamburger Navigation Bar -->
+    <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+      <a class="navbar-brand" href="#"><img src="../Images/Websites logo(Online).png" class="Logo" alt=""></a>
+      <!-- Hamburger Icon -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Nav Items -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link text-dark" style="padding-right: 50px;" href="Index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" style="padding-right: 50px;" href="About.html">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" style="padding-right: 50px;" href="Services.html">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" style="padding-right: 30px;" href="Contact.html">Contact Us</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Include Bootstrap JS (jQuery and Popper.js are required dependencies) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  
+<!-- <body> -->
+ 
+  <div class="container">
+    <form action="https://your-payment-processor.com/process-payment" method="post">
+      <h1>Order Form</h1>
+      <div id="ord">
+        <div>
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+          <label for="address">Address:</label>
+          <textarea id="address" name="address" required></textarea>
+        </div>
+        <div>
+          <label for="product">Product:</label>
+          <select id="product" name="product" required>
+            <option value="">Select a product</option>
+            <option value="Product 1">People's favorite skincare products</option>
+            <option value="Product 2">Natural Agro Products</option>
+          </select> 
+        </div>
+        <div>
+          <label for="quantity">Quantity:</label>
+          <input type="number" id="quantity" name="quantity" required>
+          <label for="bank">Bank:</label>
+          <select id="bank" name="Bank name" required>
+            <option value="">Select a Bank</option>
+            <option value="Bank 1">Bank Of Bhutan</option>
+            <option value="Bank 2">Bhutan National Bank</option>
+            <option value="Bank 3">Druk PNB Bank</option>
+            <option value="Bank 4">T Bank Bhutan</option>
+            <option value="Bank 5">Bhutan Development Bank Limited</option>
+
+          </select>
+        </div>
+        <div style="display: flex; justify-content: center;">
+          <button type="submit" onclick="showAlert()">Pay Now</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  
+  <footer class="bg-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <!-- Info -->
+        <div class="col-md-4 text-center text-md-left mb-3 mb-md-0">
+          <h5>DK/Phar Inventory Management System</h5>
+          <p class="text-muted small">
+            Phone: 77269712<br />
+            Email: dikbdrghalley12@gmail.com<br />
+            Thimphu/Phuentsholing, Bhutan
+          </p>
+        </div>
+
+        <!-- Social -->
+        <div class="col-md-4 text-center mb-3 mb-md-0">
+          <h6>Follow us</h6>
+          <div class="d-flex justify-content-center gap-3 mt-2">
+            <a href="https://www.facebook.com/pharmith.lepcha.2025" class="text-decoration-none">
+              <i class="fa-brands fa-facebook fa-2x" style="color: #3053ab;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-instagram fa-2x" style="color: #d01b8d;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-youtube fa-2x" style="color: #f90b47;"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Mascot -->
+        <div class="col-md-4 text-center">
+          <img
+            src="../Images/thumbBoy-removebg-preview.png"
+            alt="Support"
+            class="img-fluid"
+            style="max-height: 120px;"
+          />
+        </div>
+      </div>
+      <hr class="my-4" />
+      <div class="text-center text-muted">
+        &copy; Inventory Management System 2025
+      </div>
+    </div>
+  </footer> 
+</body>
+</html>

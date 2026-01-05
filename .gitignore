@@ -1,0 +1,24 @@
+# Eclipse
+.metadata
+.settings/
+.classpath
+.project
+.factorypath
+
+# Maven / Build
+target/
+*.jar
+*.war
+
+# Uploads (optional — usually not versioned)
+uploads/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode (if used)
+.vscode/
