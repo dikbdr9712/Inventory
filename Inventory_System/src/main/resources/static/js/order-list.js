@@ -2,6 +2,7 @@
 
 let allOrders = []; // Store raw data
 let currentFilter = 'needs-action'; // Default view
+let currentStatusFilter = null; // Optional: filter by exact status
 
 // Utility: format date
 function formatDate(dateStr) {
@@ -62,12 +63,16 @@ async function loadOrders() {
 
 // Apply current filter and render
 function applyFilter() {
-  let filteredOrders = [];
-  
+  let filteredOrders = [...allOrders];
+
+  // Apply "needs-action" vs "all"
   if (currentFilter === 'needs-action') {
-    filteredOrders = allOrders.filter(needsAction);
-  } else {
-    filteredOrders = [...allOrders];
+    filteredOrders = filteredOrders.filter(needsAction);
+  }
+
+  // Apply status filter if set
+  if (currentStatusFilter) {
+    filteredOrders = filteredOrders.filter(order => order.orderStatus === currentStatusFilter);
   }
 
   renderOrders(filteredOrders);
@@ -138,7 +143,7 @@ function renderOrders(orders) {
 function getBadgeClass(status) {
   switch (status) {
     case 'PENDING': return 'bg-warning text-dark';
-    case 'CREATED': return 'bg-secondary'; // or bg-light text-dark
+    case 'CREATED': return 'bg-secondary';
     case 'CONFIRMED': return 'bg-info text-dark';
     case 'SHIPPED': return 'bg-primary';
     case 'COMPLETED': return 'bg-success';
@@ -173,7 +178,7 @@ function getActionButtons(order) {
   return buttons;
 }
 
-// === ACTION HANDLERS (unchanged) ===
+// === ACTION HANDLERS ===
 async function confirmPayment(orderId) {
   if (!confirm('Confirm payment received for this order?')) return;
   await performOrderAction(orderId, 'confirm-payment');
@@ -235,18 +240,40 @@ async function performOrderAction(orderId, action) {
 document.addEventListener('DOMContentLoaded', () => {
   loadOrders();
 
-  // Set up filter buttons
+  // Main filter: Needs Action vs All
   document.getElementById('btn-needs-action').addEventListener('click', () => {
     currentFilter = 'needs-action';
+    currentStatusFilter = null; // Reset status filter when switching main view
     document.getElementById('btn-needs-action').classList.add('active');
     document.getElementById('btn-all-orders').classList.remove('active');
+    // Reset dropdown text
+    document.getElementById('btn-filter-status').innerHTML = 'Filter by Status <span class="caret"></span>';
     applyFilter();
   });
 
   document.getElementById('btn-all-orders').addEventListener('click', () => {
     currentFilter = 'all';
+    currentStatusFilter = null; // Reset status filter
     document.getElementById('btn-all-orders').classList.add('active');
     document.getElementById('btn-needs-action').classList.remove('active');
+    document.getElementById('btn-filter-status').innerHTML = 'Filter by Status <span class="caret"></span>';
     applyFilter();
+  });
+
+  // Status filter dropdown
+  const statusItems = document.querySelectorAll('#btn-filter-status + .dropdown-menu .dropdown-item');
+  statusItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const status = item.dataset.status;
+      currentStatusFilter = status === 'null' ? null : status;
+
+      // Update dropdown button text
+      const btn = document.getElementById('btn-filter-status');
+      btn.innerHTML = (status === 'null' ? 'Filter by Status' : `Status: ${status}`) + 
+                      ' <span class="caret"></span>';
+
+      applyFilter();
+    });
   });
 });
