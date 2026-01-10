@@ -2,8 +2,10 @@ package com.api.inventory.service;
 
 import java.util.List;
 
+
 import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
+import com.api.inventory.dto.OrderVerificationDTO;
 import com.api.inventory.entity.Order;
 
 public interface OrderService {
@@ -15,5 +17,9 @@ public interface OrderService {
     List<OrderItemResponseDTO> getOrderItemsByOrderId(Long orderId);
     Order getOrderById(Long orderId);
 	void confirmPayment(Long orderId);
-	 void shipOrder(Long orderId, String shipmentId);
+	void shipOrder(Long orderId, String shipmentId);
+	Order findById(Long id);
+	Order save(Order order);
+	List<Order> getOrdersByStatus(String status);
+	List<OrderVerificationDTO> getOrdersForVerification(String status);
 }

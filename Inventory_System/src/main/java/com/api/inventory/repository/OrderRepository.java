@@ -11,5 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
 	List<Order> findByCustomerEmail(String customerEmail);
-	 List<Order> findAllByOrderByCreatedAtDesc();
+	List<Order> findAllByOrderByCreatedAtDesc();
+	List<Order> findByOrderStatus(String status);
 	}

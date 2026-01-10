@@ -41,6 +41,13 @@ public class Order {
 
     @Column(name = "shipment_id")
     private String shipmentId; 
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", referencedColumnName = "orderId")
+    private Payment payment;
+    
+    @Column(name = "note", columnDefinition = "TEXT")
+    private String note;
 
 	public Long getOrderId() {
 		return orderId;
@@ -112,6 +119,24 @@ public class Order {
 
 	public void setShipmentId(String shipmentId) {
 		this.shipmentId = shipmentId;
+	}
+	
+	
+
+	public Payment getPayment() {
+		return payment;
+	}
+
+	public void setPayment(Payment payment) {
+		this.payment = payment;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
 	}
 
 	

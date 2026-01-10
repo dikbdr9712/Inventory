@@ -2,10 +2,14 @@ package com.api.inventory.service.impl;
 
 import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
+import com.api.inventory.dto.OrderVerificationDTO;
 import com.api.inventory.entity.*;
 import com.api.inventory.exception.OrderNotFoundException;
+import com.api.inventory.exception.ResourceNotFoundException;
 import com.api.inventory.repository.*;
 import com.api.inventory.service.OrderService;
+import com.api.inventory.service.PaymentService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,9 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Autowired
     private ItemMasterRepository itemMasterRepository;
+	@Autowired
+	private  PaymentService paymentService; 
+
 
 	@Override
 	@Transactional
@@ -276,5 +283,45 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("SHIPPED");
         order.setShipmentId(finalShipmentId);
         orderRepository.save(order);
+    }
+
+    @Override
+    public Order findById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+    }
+
+    @Override
+    public Order save(Order order) {
+        return orderRepository.save(order);
+    }
+    @Override
+    public List<Order> getOrdersByStatus(String status) {
+        return orderRepository.findByOrderStatus(status);
+    }
+    
+    
+    @Override
+    public List<OrderVerificationDTO> getOrdersForVerification(String status) {
+        List<Order> orders = orderRepository.findByOrderStatus(status);
+        return orders.stream().map(order -> {
+            OrderVerificationDTO dto = new OrderVerificationDTO();
+            dto.setOrderId(order.getOrderId());
+            dto.setCustomerName(order.getCustomerName());
+            dto.setCustomerEmail(order.getCustomerEmail());
+            dto.setOrderStatus(order.getOrderStatus());
+            dto.setTotalAmount(order.getTotalAmount());
+            dto.setCreatedAt(order.getCreatedAt());
+            dto.setNote(order.getNote());
+
+            Payment payment = paymentService.findByOrderId(order.getOrderId());
+            if (payment != null) {
+                dto.setPaymentMethod(payment.getPaymentMethod());
+                dto.setJournalNumber(payment.getJournalNumber());
+                dto.setPaymentAmount(payment.getAmount());
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
