@@ -1,5 +1,3 @@
-// product.js
-
 // Global function to escape HTML
 function escapeHtml(text) {
   if (!text) return '';
@@ -71,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const productDetail = document.getElementById("product-detail");
 
   let allItems = [];
+  let currentSearchTerm = ''; // Track search term
 
   // Function to render product cards
   function renderCards(items) {
@@ -184,19 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('product-detail').style.display = 'block';
   };
 
-  // ✅ BACK TO PRODUCTS — no scope issues!
+  // ✅ BACK TO PRODUCTS
   window.showProducts = function() {
     const container = document.getElementById("container");
     const pd = document.getElementById("product-detail");
     const cg = document.getElementById("card-gallery-wrapper");
     if (container && productDetail && cardGallery) {
-    productDetail.style.display = 'none';
-    container.style.display = 'block'; // 👈 THIS WAS MISSING!
-    cardGallery.style.display = 'flex';
-    
-    // Optional: Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+      productDetail.style.display = 'none';
+      container.style.display = 'block';
+      cardGallery.style.display = 'flex';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Filter logic (simplified)
@@ -231,7 +228,35 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       allItems = await response.json();
+
+      // Initial render
       renderCards(allItems);
+
+      // Add search listener
+      document.getElementById('search-products').addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.toLowerCase().trim();
+        if (!currentSearchTerm) {
+          renderCards(allItems); // Show all
+        } else {
+          const filtered = allItems.filter(item => {
+          const term = currentSearchTerm;
+
+          const name = (item.itemName || '').toLowerCase();
+          const desc = (item.description || '').toLowerCase();
+          const sku = (item.sku || '').toLowerCase();
+          const category = (item.category || '').toLowerCase(); // 👈 Now available!
+
+          return (
+            name.includes(term) ||
+            desc.includes(term) ||
+            sku.includes(term) ||
+            category.includes(term)
+          );
+        });
+          renderCards(filtered);
+        }
+      });
+
     } catch (error) {
       console.error('Error fetching items:', error);
       cardGallery.innerHTML = `<p style="color:red;">⚠️ Failed to load products: ${error.message}</p>`;

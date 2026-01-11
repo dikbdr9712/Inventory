@@ -2,6 +2,7 @@
 
 let allOrders = []; // Store raw data
 let currentFilter = 'needs-action'; // Default view
+let currentSearchTerm = '';
 let currentStatusFilter = null; // Optional: filter by exact status
 
 // Utility: format date
@@ -75,8 +76,20 @@ function applyFilter() {
     filteredOrders = filteredOrders.filter(order => order.orderStatus === currentStatusFilter);
   }
 
+  // Apply search filter if term exists
+  if (currentSearchTerm.trim()) {
+    const term = currentSearchTerm.toLowerCase().trim();
+    filteredOrders = filteredOrders.filter(order => {
+      const orderIdMatch = String(order.orderId).includes(term);
+      const customerNameMatch = (order.customerName || '').toLowerCase().includes(term);
+      const customerEmailMatch = (order.customerEmail || '').toLowerCase().includes(term);
+      return orderIdMatch || customerNameMatch || customerEmailMatch;
+    });
+  }
+
   renderOrders(filteredOrders);
 }
+
 
 function renderOrders(orders) {
   const container = document.getElementById('orders-container');
@@ -276,4 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
       applyFilter();
     });
   });
+
+  // Search input event listener
+  document.getElementById('search-orders').addEventListener('input', (e) => {
+    currentSearchTerm = e.target.value;
+    applyFilter(); // Re-render with updated search term
+  });
+
 });

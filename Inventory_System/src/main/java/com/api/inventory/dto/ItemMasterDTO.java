@@ -18,6 +18,7 @@ public class ItemMasterDTO {
     private String availability;
     private String barcode;  
     private String supplierItemCode;  
+    private String category;
     private String imagePath;
     
 	public Long getItemId() {
@@ -87,6 +88,12 @@ public class ItemMasterDTO {
 	}
 	public void setImagePath(String imagePath) {
 		this.imagePath = imagePath;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
 	}
     
 	

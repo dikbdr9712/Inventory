@@ -26,6 +26,8 @@ public class ItemMaster {
     private String uom;
     private BigDecimal pricePerUnit;
     private LocalDateTime createdAt;
+    @Column(name = "category", length = 100)
+    private String category;
     @Column(name = "image_path")
     private String imagePath;
     
@@ -95,6 +97,12 @@ public class ItemMaster {
 	}
 	public void setImagePath(String imagePath) {
 		this.imagePath = imagePath;
+	}
+	public String getCategory() {
+		return category;
+	}
+	public void setCategory(String category) {
+		this.category = category;
 	}
 	
 }

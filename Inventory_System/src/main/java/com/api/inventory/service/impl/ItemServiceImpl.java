@@ -44,6 +44,7 @@ public class ItemServiceImpl implements ItemService {
         item.setBarcode(dto.getBarcode());
         item.setSupplierItemCode(dto.getSupplierItemCode());
         item.setCreatedAt(LocalDateTime.now());
+        item.setCategory(dto.getCategory().trim());
 
         // ✅ Generate SKU BEFORE saving
         String autoSku = "ITEM-" + System.currentTimeMillis(); // Temporary unique ID
@@ -89,6 +90,7 @@ public class ItemServiceImpl implements ItemService {
         dto.setPricePerUnit(item.getPricePerUnit());
         dto.setCurrentStock(stock != null ? stock.getCurrentQuantity() : 0);
         dto.setAvailability(stock != null ? stock.getStatus() : "Unavailable");
+        dto.setCategory(item.getCategory());
         dto.setImagePath(item.getImagePath());
         return dto;
     }
