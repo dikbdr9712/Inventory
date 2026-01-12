@@ -4,6 +4,7 @@ let allOrders = []; // Store raw data
 let currentFilter = 'needs-action'; // Default view
 let currentSearchTerm = '';
 let currentStatusFilter = null; // Optional: filter by exact status
+let currentSortOrder = 'desc';
 
 // Utility: format date
 function formatDate(dateStr) {
@@ -87,6 +88,15 @@ function applyFilter() {
     });
   }
 
+  filteredOrders.sort((a, b) => {
+    const idA = a.orderId || 0;
+    const idB = b.orderId || 0;
+    if (currentSortOrder === 'asc') {
+      return idA - idB;
+    } else {
+      return idB - idA;
+    }
+  });
   renderOrders(filteredOrders);
 }
 
@@ -294,6 +304,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('search-orders').addEventListener('input', (e) => {
     currentSearchTerm = e.target.value;
     applyFilter(); // Re-render with updated search term
+  });
+
+  // Sort buttons
+  document.getElementById('sort-asc').addEventListener('click', () => {
+    currentSortOrder = 'asc';
+    document.getElementById('sort-asc').classList.add('active');
+    document.getElementById('sort-desc').classList.remove('active');
+    applyFilter();
+  });
+
+  document.getElementById('sort-desc').addEventListener('click', () => {
+    currentSortOrder = 'desc';
+    document.getElementById('sort-desc').classList.add('active');
+    document.getElementById('sort-asc').classList.remove('active');
+    applyFilter();
   });
 
 });
