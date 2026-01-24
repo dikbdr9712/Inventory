@@ -1,3 +1,5 @@
+let currentSortOrder = 'desc'; // Define globally so it persists across functions
+
 document.addEventListener('DOMContentLoaded', () => {
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const userEmail = localStorage.getItem('currentUser');
@@ -8,23 +10,55 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    // Load initial orders
     loadOrders(userEmail);
+
+    // Add event listeners for sort buttons — only if they exist
+    const ascBtn = document.getElementById('sort-asc-individual');
+    const descBtn = document.getElementById('sort-desc-individual');
+
+    if (ascBtn && descBtn) {
+        ascBtn.addEventListener('click', () => {
+            currentSortOrder = 'asc';
+            ascBtn.classList.add('active');
+            descBtn.classList.remove('active');
+            loadOrders(userEmail);
+        });
+
+        descBtn.addEventListener('click', () => {
+            currentSortOrder = 'desc';
+            descBtn.classList.add('active');
+            ascBtn.classList.remove('active');
+            loadOrders(userEmail);
+        });
+    }
 });
 
 async function loadOrders(email) {
     const container = document.getElementById('orders-container');
+    if (!container) return;
+
     container.innerHTML = '<p>Loading your orders...</p>';
 
     try {
         // 1. Fetch orders
         const ordersResponse = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(email)}`);
         if (!ordersResponse.ok) throw new Error('Failed to fetch orders');
-        const orders = await ordersResponse.json();
+        let orders = await ordersResponse.json();
 
         if (orders.length === 0) {
             container.innerHTML = '<p>You have no orders yet.</p>';
             return;
         }
+
+        // Sort orders by orderId based on currentSortOrder
+        orders.sort((a, b) => {
+            if (currentSortOrder === 'asc') {
+                return a.orderId - b.orderId;
+            } else {
+                return b.orderId - a.orderId;
+            }
+        });
 
         // 2. Fetch items for ALL orders in parallel
         const ordersWithItems = await Promise.all(
@@ -50,7 +84,7 @@ async function loadOrders(email) {
                 const unitPrice = item.unitPrice || 0;
                 const total = (unitPrice * qty).toFixed(2);
 
-               
+                return `<li>${name} x ${qty} - Nu. ${total}</li>`;
             }).join('');
 
             return `
@@ -58,6 +92,7 @@ async function loadOrders(email) {
                     <h5>Order #${order.orderId}</h5>
                     <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
                     <p><strong>Total Amount:</strong> Nu. ${Number(order.totalAmount).toFixed(2)}</p>
+                    <ul class="mt-2">${itemsHtml}</ul>
                     <div class="mt-3">
                         <a href="order-details.html?orderId=${order.orderId}" class="btn btn-sm btn-outline-primary">View Details</a>
                         ${order.orderStatus === 'PENDING' ? 
@@ -117,7 +152,8 @@ async function cancelOrder(orderId) {
 
         if (response.ok) {
             alert("Order cancelled successfully!");
-            loadOrders(localStorage.getItem('currentUser'));
+            const userEmail = localStorage.getItem('currentUser');
+            loadOrders(userEmail);
         } else {
             alert("Failed to cancel order. Please try again.");
         }

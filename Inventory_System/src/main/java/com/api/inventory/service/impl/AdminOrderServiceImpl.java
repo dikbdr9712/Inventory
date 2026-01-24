@@ -85,6 +85,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         response.setCustomerName(order.getCustomerName() != null ? order.getCustomerName() : "Unknown");
         response.setCustomerEmail(order.getCustomerEmail() != null ? order.getCustomerEmail() : "No email");
         response.setOrderStatus(order.getOrderStatus());
+        response.setPaymentStatus(order.getPaymentStatus());
         response.setTotalAmount(order.getTotalAmount());
         response.setCreatedAt(order.getCreatedAt());
         response.setUpdatedAt(order.getUpdatedAt());

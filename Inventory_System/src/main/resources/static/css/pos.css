@@ -1,0 +1,133 @@
+
+  /* Enhanced Search Results */
+  #searchResults {
+    border: 1px solid #ddd;
+    border-top: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    background: white;
+  }
+
+  #searchResults .list-group-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  #searchResults .list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+    border-left: 3px solid #0d6efd;
+  }
+
+  #searchResults .list-group-item:focus {
+    outline: 2px solid #0d6efd;
+    background-color: #e9ecef;
+  }
+
+  /* Clear button inside search field */
+  .search-container {
+    position: relative;
+  }
+
+  .clear-search-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    z-index: 10;
+  }
+
+  .clear-search-btn:hover {
+    color: #dc3545;
+  }
+
+  /* Cart Table Styling */
+  #cartItems td {
+    vertical-align: middle;
+  }
+
+  #cartItems input[type="number"] {
+    text-align: center;
+    font-weight: bold;
+  }
+
+  /* Cash change section */
+#cashChangeSection {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #ddd;
+}
+
+#cashChangeSection .form-control {
+  font-size: 1rem;
+}
+  /* Complete Sale Button */
+  #completeSale {
+    width: 100%;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    padding: 12px;
+    font-size: 18px;
+    margin-top: 20px;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+  }
+/* Enhanced Invoice Preview */
+#invoicePreview {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+#invoicePreview h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+#invoicePreview .invoice-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #0d6efd;
+}
+
+#invoicePreview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+#invoicePreview th, #invoicePreview td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+#invoicePreview .total-row td {
+  font-weight: bold;
+  background-color: #f8f9fa;
+}
+
+/* Print button */
+#printInvoice {
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}

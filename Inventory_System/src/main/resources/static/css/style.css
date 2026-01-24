@@ -1,56 +1,200 @@
-/* Logo */
-.Logo {
-  height: 50px;
-  width: auto;
-}
+/* ======================
+   GENERAL STYLES
+====================== */
 
-/* Body */
 body {
   scroll-behavior: smooth;
   font-family: 'Segoe UI', system-ui, sans-serif;
   line-height: 1.6;
-  color: #2E2E2E;
+  color: #2e2e2e;
+  margin: 0;
+  padding: 0;
 }
 
-/* Navbar */
+/* ======================
+   NAVIGATION BAR
+====================== */
+
 .navbar {
   background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 1rem;
 }
 
-.navbar-brand img {
+.navbar-brand img.Logo {
   height: 50px;
   width: auto;
 }
 
 .nav-link {
   font-weight: 500;
+  color: #2e2e2e !important;
 }
 
-/* Carousel */
+.navbar-nav .nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapse:not(.show) {
+  display: none;
+}
+
+.collapsing {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.35s ease;
+}
+/* Admin Dropdown Styling */
+#admin-dropdown {
+  position: relative;
+}
+#admin-dropdown .dropdown-menu {
+  position: absolute;
+  min-width: 220px;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0;
+  top: 100%;
+  right: 0;
+  left: auto;
+  z-index: 1000;
+}
+
+#admin-dropdown .dropdown-item {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+#admin-dropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #2e2e2e;
+}
+
+#admin-dropdown .dropdown-toggle::after {
+  margin-left: 0.5rem;
+}
+
+/* Ensure dropdown appears properly on all screens */
+@media (max-width: 992px) {
+  .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 1rem 0;
+  }
+  
+  .navbar-nav .nav-item {
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .navbar-nav .nav-link {
+
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  
+  .navbar-nav .nav-link:last-child {
+    border-bottom: none;
+  }
+  
+  .navbar-toggler {
+    margin-left: 0;
+  }
+   #admin-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    width: 100%;
+    margin-top: 0;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+    min-width: auto;
+    right: 0;
+    left: auto;
+  }
+  
+  #admin-dropdown .dropdown-item {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  
+  #admin-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-brand img.Logo {
+    height: 40px;
+  }
+  
+  .navbar-nav .nav-link {
+    padding: 0.75rem 1rem;
+  }
+  #admin-dropdown .dropdown-menu {
+    right: 0;
+    left: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* For medium screens where items might still overflow */
+@media (min-width: 768px) and (max-width: 991px) {
+  .navbar-nav .nav-link {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .navbar-brand img.Logo {
+    height: 40px;
+  }
+}
+
+/* ======================
+   CAROUSEL & HERO
+====================== */
+
 .carousel-item img {
   height: 60vh;
   object-fit: cover;
+  width: 100%;
 }
 
-/* Welcome Section */
+/* ======================
+   CONTENT SECTIONS
+====================== */
+
 .container .lead {
   font-size: 1.1rem;
   text-align: center;
+  margin: 1rem 0;
 }
 
-/* Quote */
 .blockquote {
   font-style: italic;
   padding: 1.5rem;
   margin: 1rem 0;
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
 }
 
-/* Flex Section */
+/* Flex Section (About/Services) */
 #flex {
   display: flex;
   flex-direction: row;
   margin: 15px;
+  gap: 15px;
 }
 
 #ImgPara {
@@ -65,20 +209,25 @@ body {
   font-size: 16px;
 }
 
-/* Products */
+/* ======================
+   PRODUCTS SECTION
+====================== */
+
 #ProductHeading {
   text-align: center;
   width: 100%;
   margin: 5px;
   padding: 30px;
+  font-size: 2rem;
 }
-
 
 #ImgContainer {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 100px;
+  flex-wrap: wrap;
+  padding-top: 50px;
+  gap: 20px;
 }
 
 .PImgContainer {
@@ -90,110 +239,94 @@ body {
   width: 30%;
   margin: 10px;
   box-sizing: border-box;
-  box-shadow: 5px 5px 5px 5px gray;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+}
+
+.PImgContainer img {
+  max-width: 100%;
+  max-height: 70%;
+  object-fit: contain;
 }
 
 h4 {
   text-align: center;
+  margin-top: 10px;
 }
 
-/* Read More Button */
 #ReadMore {
   display: block;
-  margin: 0 auto;
-  padding: 10px;
+  margin: 20px auto;
+  padding: 10px 20px;
   text-align: center;
   border-radius: 10px;
-  margin-bottom: 10px;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  width: fit-content;
 }
 
-/* Footer */
-#Ani {
-  background-color: rgb(221, 222, 224);
+/* ======================
+   FOOTER
+====================== */
+
+footer {
+  background-color: #dddde0;
+  color: #070505;
   text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+}
+
+#Ani {
   display: flex;
   align-items: center;
-  justify-content: space-around;
   justify-content: center;
-}
-
-h3 {
-  color: white;
-  margin-top: 10px;
-}
-
-.fa-regular {
-  margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 20px;
 }
 
 .animatedboy {
   width: 90%;
+  max-width: 300px;
 }
 
-.Boy{
+.Boy {
   width: 30%;
-  animation-name: dezang;
-  animation-duration: 10s;
-  animation-iteration-count:infinite;
+  animation: dezang 10s infinite;
   position: relative;
   padding: 30px;
   margin: 4%;
 }
 
 @keyframes dezang {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
-footer {
-  height: 10%;
-  width: 100%;
-  color: #070505;
-  text-align: center;
-  position: relative;
-  top: 10px;
-}
-
-/* Responsive */
 @media screen and (max-width: 480px) {
-  #GroupImg {
-    width: 100%;
+  #admin-dropdown .dropdown-menu {
+    min-width: 100%;
+    right: 0;
+    left: auto;
   }
-
-  #Apple {
-    height: 100px;
-    width: 100px;
+  #admin-dropdown .dropdown-item {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
   }
-
-  div#flex {
-    display: flex;
-    flex-direction: column;
+  .carousel-item img {
+    height: 40vh;
   }
-
-  div#flex img {
-    width: 75%;
-    display: block;
-    margin: 0 auto;
-  }
-
-  #ImgContainer {
-    display: flex;
-    flex-direction: column;
+  #ProductHeading {
+    font-size: 1.5rem;
+    padding: 20px;
   }
 
   .PImgContainer {
-    width: 70%;
-  }
-
-  #Ani {
-    display: flex;
-    flex-direction: column;
+    width: 90%;
   }
 }

@@ -3,34 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laptop - Green Pathway</title>
+  <title>Products - Green Pathway</title>
   <link rel="stylesheet" href="../css/Product.css" />
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
   <script src="https://kit.fontawesome.com/33616e440d.js" crossorigin="anonymous"></script>
-  <script src="../js/authNav.js"></script>
-  <style>
-    .navbar-custom {
-      background-color: rgb(182, 190, 206);
-    }
-  </style>
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-    <a class="navbar-brand" href="Index.html">
-      <img src="../Images/Websites logo(Online).png" class="Logo" alt="Green Pathway" />
-    </a>
-        <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-      >
-      <span class="navbar-toggler-icon"></span>
+      <a class="navbar-brand" href="Index.html">
+        <img src="../Images/Websites logo(Online).png" class="Logo" alt="Logo" />
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
       </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ml-auto">
@@ -40,8 +34,7 @@
         <li class="nav-item"><a class="nav-link text-dark" href="Product.html"><b>Product</b></a></li>
         <li class="nav-item"><a class="nav-link text-dark" href="orders.html">My Orders</a></li>
         <li class="nav-item"><a class="nav-link text-dark" href="Contact.html">Contact Us</a></li>
-        <li class="nav-item"><a id="loginLink"  class="nav-link text-dark" href="login.html">Login / Register</a>
-        </li>
+        <li class="nav-item"><a id="loginLink" class="nav-link text-dark" href="login.html">Login / Register</a></li>
       </ul>
     </div>
   </nav>
@@ -49,37 +42,35 @@
   <!-- Main Content -->
   <div id="container">
     <h4><b>Find Your Product:</b></h4>
-    <!-- Search bar -->
     <div class="mb-3">
       <input 
         type="text" 
         id="search-products" 
         class="form-control" 
         placeholder="Search by Name, Price, Category, SKU, or Description..." 
-        aria-label="Search products"
       />
     </div>
     <div class="header-row">
-    <ul id="filter-list">
-      <li data-group="0">All Natural products</li>
-    </ul>
-    <div class="header-actions">
-      <button id="addNewItemBtn" class="add-item-btn">➕ Add New Item</button>
-      <a href="cart.html" class="cart-icon-link" id="cart-icon-link">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="cart-badge" id="cart-count-badge"></span>
-      </a>
+      <ul id="filter-list">
+        <li data-group="0">All Natural products</li>
+      </ul>
+      <div class="header-actions">
+        <button id="addNewItemBtn" class="add-item-btn">➕ Add New Item</button>
+        <a href="cart.html" class="cart-icon-link" id="cart-icon-link">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge" id="cart-count-badge"></span>
+        </a>
+      </div>
     </div>
-  </div>
     <ul id="card-gallery-wrapper">
-      <!-- Will be filled with Laptop card -->
+      <!-- Cards loaded by JS -->
     </ul>
   </div>
 
-  <!-- Product Detail View (Hidden by default) -->
+  <!-- Product Detail View -->
   <div id="product-detail" class="product-detail">
     <h2 id="detail-title">Loading...</h2>
-    <img id="detail-image" src="Images/default.jpg" alt="Product" />
+    <img id="detail-image" src="../Images/default.jpg" alt="Product" />
     <p><strong>Description:</strong> <span id="detail-desc">...</span></p>
     <p><strong>Price:</strong> <span id="detail-price">Nu. N/A</span></p>
     <p><strong>Stock:</strong> <span id="detail-stock">0</span> <span id="detail-uom">pcs</span></p>
@@ -94,7 +85,6 @@
   <footer class="bg-light py-4 mt-5">
     <div class="container">
       <div class="row">
-        <!-- Info -->
         <div class="col-md-4 text-center text-md-left mb-3 mb-md-0">
           <h5>DK/Phar Inventory Management System</h5>
           <p class="text-muted small">
@@ -103,8 +93,6 @@
             Thimphu/Phuentsholing, Bhutan
           </p>
         </div>
-
-        <!-- Social -->
         <div class="col-md-4 text-center mb-3 mb-md-0">
           <h6>Follow us</h6>
           <div class="d-flex justify-content-center gap-3 mt-2">
@@ -119,29 +107,20 @@
             </a>
           </div>
         </div>
-
-        <!-- Mascot -->
         <div class="col-md-4 text-center">
-          <img
-            src="../Images/thumbBoy-removebg-preview.png"
-            alt="Support"
-            class="img-fluid"
-            style="max-height: 120px;"
-          />
+          <img src="../Images/thumbBoy-removebg-preview.png" alt="Support" class="img-fluid" style="max-height: 120px;" />
         </div>
       </div>
       <hr class="my-4" />
-      <div class="text-center text-muted">
-        &copy; Inventory Management System 2025
-      </div>
+      <div class="text-center text-muted">&copy; Inventory Management System 2025</div>
     </div>
   </footer>
 
-  <!-- Bootstrap JS -->
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
   <script src="../js/product.js"></script>
+  <script src="../js/authNav.js"></script>
 </body>
-
 </html>

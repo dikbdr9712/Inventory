@@ -46,12 +46,6 @@
         <li class="nav-item">
           <a class="nav-link text-dark" href="orders.html">My Order</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link btn btn-success btn-sm text-white ms-2" href="order-list.html">
-            <i class="fas fa-list"></i> Order List
-          </a>
-        </li>
-        <li class="nav-item"><a class="nav-link btn btn-warning btn-sm text-white ms-2" href="OrderVerification.html"><i class="fas fa-check-circle"></i> Verify Payments </a></li>
       </ul>
     </div>
   </nav>
@@ -87,7 +81,7 @@
         <ul class="dropdown-menu">
           <li><a class="dropdown-item" href="#" data-status="null">All Statuses</a></li>
           <li><a class="dropdown-item" href="#" data-status="CREATED">Created</a></li>
-          <li><a class="dropdown-item" href="#" data-status="PENDING">PaymentPending</a></li>
+          <li><a class="dropdown-item" href="#" data-status="PENDING">Pending Payment</a></li>
           <li><a class="dropdown-item" href="#" data-status="CONFIRMED">Confirmed</a></li>
           <li><a class="dropdown-item" href="#" data-status="SHIPPED">Shipped</a></li>
           <li><a class="dropdown-item" href="#" data-status="COMPLETED">Completed</a></li>
@@ -105,9 +99,7 @@
     <div id="orders-container"></div>
   </div>
 
-  <!-- Bootstrap JS (required for dropdowns) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Order list logic -->
   <script src="../js/order-list.js"></script>
   <script src="../js/authNav.js"></script>
   <script src="../js/Hamb.js"></script>

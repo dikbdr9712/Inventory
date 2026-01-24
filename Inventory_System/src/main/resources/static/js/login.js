@@ -31,13 +31,14 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
         // ✅ Parse user data (now includes name + phone!)
         const user = await response.json();
-
+        console.log('Login response:', user); 
         // ✅ Save ALL user data to localStorage
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('currentUser', user.email);
         localStorage.setItem('userName', user.name);     // ✅ Save name
         localStorage.setItem('userPhone', user.phone);   // ✅ Save phone
         localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userEmail', user.email);
 
         // ✅ Show welcome message
         alert(`✅ Welcome, ${user.name}!`);

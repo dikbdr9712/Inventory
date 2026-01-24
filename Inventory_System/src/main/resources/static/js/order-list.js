@@ -1,5 +1,3 @@
-// js/order-list.js
-
 let allOrders = []; // Store raw data
 let currentFilter = 'needs-action'; // Default view
 let currentSearchTerm = '';
@@ -17,20 +15,23 @@ function needsAction(order) {
   const status = order.orderStatus;
   const payment = order.paymentStatus;
 
-  // Needs action if:
-  // - Payment is pending
-  // - Paid but not confirmed (CREATED)
-  // - Confirmed but not shipped
-  // - Shipped but not completed
-  // - Any unknown/undefined state
+  // Orders needing admin action:
+  // 1. Payment confirmed (PAID or PARTIALLY_PAID) but order still CREATED → needs confirmation
+  if ((payment === 'PAID' || payment === 'PARTIALLY_PAID') && status === 'CREATED') return true;
 
-  if (payment === 'PENDING') return true;
-  if (payment === 'PAID' && status === 'CREATED') return true;
+  // 2. Order confirmed but not shipped
   if (status === 'CONFIRMED') return true;
-  if (status === 'SHIPPED') return true;
-  if (!status || status === 'UNKNOWN' || status === 'PENDING') return true;
 
-  // COMPLETED, CANCELLED → no action needed
+  // 3. Order shipped but not completed
+  if (status === 'SHIPPED') return true;
+
+  // 4. Any unknown/invalid state (safety net)
+  if (!status || status === 'UNKNOWN') return true;
+
+  // ❌ Do NOT include:
+  // - PENDING payment (customer hasn't paid yet → not admin's job)
+  // - CANCELLED or COMPLETED orders
+
   return false;
 }
 
@@ -99,7 +100,6 @@ function applyFilter() {
   });
   renderOrders(filteredOrders);
 }
-
 
 function renderOrders(orders) {
   const container = document.getElementById('orders-container');
@@ -178,7 +178,7 @@ function getBadgeClass(status) {
 function getActionButtons(order) {
   let buttons = '';
 
-  if (order.paymentStatus === 'PENDING') {
+  if (order.paymentStatus === 'PENDING' || order.paymentStatus === 'PARTIALLY_PAID') {
     buttons += `<button class="btn btn-warning btn-sm me-2" onclick="confirmPayment(${order.orderId})">Confirm Payment</button>`;
   }
   else if (order.paymentStatus === 'PAID' && order.orderStatus === 'CREATED') {
@@ -206,32 +206,84 @@ async function confirmPayment(orderId) {
   if (!confirm('Confirm payment received for this order?')) return;
   await performOrderAction(orderId, 'confirm-payment');
 }
+
 async function handlePartialOrder(orderId) {
   alert('Partial fulfillment: Cancel out-of-stock items or backorder?');
 }
+
 async function confirmOrder(orderId) {
   if (!confirm('Confirm this order? Stock will be deducted.')) return;
   await performOrderAction(orderId, 'confirm');
 }
+
 async function cancelOrder(orderId) {
   if (!confirm('Cancel this order?')) return;
   await performOrderAction(orderId, 'cancel');
 }
+
 async function shipOrder(orderId) {
-  if (!confirm('Assign shipment ID and mark as shipped?')) return;
-  await performOrderAction(orderId, 'ship');
+  if (!confirm(`Mark order #${orderId} as shipped? A shipment record will be created automatically.`)) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/orders/${orderId}/ship`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      // No body needed — backend generates everything
+    });
+
+    if (res.status === 403 || res.status === 401) {
+      alert('Session expired or access denied. Please log in again.');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if (res.ok) {
+      loadOrders(); // Reload to reflect new status
+    } else {
+      const errorText = await res.text();
+      alert(`Failed to ship order: ${errorText}`);
+    }
+  } catch (e) {
+    alert(`Error: ${e.message}`);
+  }
 }
+
 async function completeOrder(orderId) {
-  if (!confirm('Mark as completed?')) return;
-  await performOrderAction(orderId, 'complete');
+  if (!confirm('Mark this order as delivered and completed?')) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/orders/${orderId}/complete`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (res.status === 403 || res.status === 401) {
+      alert('Session expired or access denied. Please log in again.');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if (res.ok) {
+      loadOrders(); // Reload to reflect new status
+    } else {
+      const errorText = await res.text();
+      alert(`Failed to complete order: ${errorText}`);
+    }
+  } catch (e) {
+    alert(`Error: ${e.message}`);
+  }
 }
+
+// Generic action handler (used by most actions except shipOrder)
 async function performOrderAction(orderId, action) {
   let endpoint;
   switch (action) {
     case 'confirm-payment': endpoint = `/api/orders/${orderId}/confirm-payment`; break;
     case 'confirm': endpoint = `/api/orders/${orderId}/confirm`; break;
     case 'cancel': endpoint = `/api/orders/${orderId}/cancel`; break;
-    case 'ship': endpoint = `/api/orders/${orderId}/ship`; break;
     case 'complete': endpoint = `/api/orders/${orderId}/complete`; break;
     default: throw new Error(`Unknown action: ${action}`);
   }
@@ -266,17 +318,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Main filter: Needs Action vs All
   document.getElementById('btn-needs-action').addEventListener('click', () => {
     currentFilter = 'needs-action';
-    currentStatusFilter = null; // Reset status filter when switching main view
+    currentStatusFilter = null;
     document.getElementById('btn-needs-action').classList.add('active');
     document.getElementById('btn-all-orders').classList.remove('active');
-    // Reset dropdown text
     document.getElementById('btn-filter-status').innerHTML = 'Filter by Status <span class="caret"></span>';
     applyFilter();
   });
 
   document.getElementById('btn-all-orders').addEventListener('click', () => {
     currentFilter = 'all';
-    currentStatusFilter = null; // Reset status filter
+    currentStatusFilter = null;
     document.getElementById('btn-all-orders').classList.add('active');
     document.getElementById('btn-needs-action').classList.remove('active');
     document.getElementById('btn-filter-status').innerHTML = 'Filter by Status <span class="caret"></span>';
@@ -291,7 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const status = item.dataset.status;
       currentStatusFilter = status === 'null' ? null : status;
 
-      // Update dropdown button text
       const btn = document.getElementById('btn-filter-status');
       btn.innerHTML = (status === 'null' ? 'Filter by Status' : `Status: ${status}`) + 
                       ' <span class="caret"></span>';
@@ -300,10 +350,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Search input event listener
+  // Search input
   document.getElementById('search-orders').addEventListener('input', (e) => {
     currentSearchTerm = e.target.value;
-    applyFilter(); // Re-render with updated search term
+    applyFilter();
   });
 
   // Sort buttons
@@ -320,5 +370,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sort-asc').classList.remove('active');
     applyFilter();
   });
-
 });

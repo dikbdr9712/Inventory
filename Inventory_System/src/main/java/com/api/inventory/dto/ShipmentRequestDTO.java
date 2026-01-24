@@ -1,6 +1,6 @@
 package com.api.inventory.dto;
 
-public class ShipmentRequest {
+public class ShipmentRequestDTO {
 	private String shipmentId;
 	private String Shipment_type;
 	

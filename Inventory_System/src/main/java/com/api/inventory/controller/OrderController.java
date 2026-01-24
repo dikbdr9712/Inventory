@@ -1,9 +1,15 @@
 package com.api.inventory.controller;
 
 import com.api.inventory.dto.OrderItemResponseDTO;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import com.api.inventory.dto.OrderRequestDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
-import com.api.inventory.dto.ShipmentRequest;
+import com.api.inventory.dto.PosSaleRequestDTO;
+import com.api.inventory.dto.ShipmentRequestDTO;
 import com.api.*;
 import com.api.inventory.dto.VerificationRequestDTO;
 import com.api.inventory.entity.ItemMaster;
@@ -19,6 +25,7 @@ import com.api.inventory.service.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +51,14 @@ public class OrderController {
 	@Autowired
     private ItemMasterRepository itemMasterRepository;
 
+	@PostMapping("/pos/sale")
+	@PreAuthorize("hasAnyRole('ADMIN','MANAGER','CASHIER')")
+	public ResponseEntity<Order> createInPersonSale(@RequestBody PosSaleRequestDTO request) {
+	    Order order = orderService.createInPersonSale(request);
+	    return ResponseEntity.ok(order);
+	}
+	
+	
     @PostMapping
     public Order createOrder(@RequestBody OrderRequestDTO dto) {
         return orderService.createOrder(dto);
@@ -52,16 +67,6 @@ public class OrderController {
     @PostMapping("/{orderId}/cancel")
     public void cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
-    }
-
-    @PostMapping("/{orderId}/confirm")
-    public void confirmOrder(@PathVariable Long orderId) {
-        orderService.confirmOrder(orderId);
-    }
-    
-    @PostMapping("/{orderId}/complete")
-    public void completeOrder(@PathVariable Long orderId) {
-        orderService.completeOrder(orderId);
     }
     
     @GetMapping("/customer/{email}")
@@ -86,33 +91,49 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
     
-    @PostMapping("/{orderId}/ship")
-    public ResponseEntity<Void> shipOrder(@PathVariable Long orderId, 
-                                        @RequestBody ShipmentRequest request) {
-        orderService.shipOrder(orderId, request.getShipmentId());
-        return ResponseEntity.ok().build();
-    }
-    
     @PutMapping("/{orderId}/verify")
     public ResponseEntity<Order> verifyOrder(
             @PathVariable Long orderId,
             @RequestBody VerificationRequestDTO request) {
 
-        // 1. Find and update order
+        String updatedBy = getCurrentUserEmail();
+        System.out.println(">>> Updating order by: " + updatedBy);
         Order order = orderService.findById(orderId);
-        order.setOrderStatus(request.getStatus());
-        order.setNote(request.getNote());
 
-        // 2. Handle payment status update (if confirmed)
-        if ("CONFIRMED".equals(request.getStatus())) {
-            // ✅ Use INSTANCE (paymentService), not class name
+        // If status is provided and is CONFIRMED → perform full confirmation flow
+        if (request.getStatus() != null && "CONFIRMED".equals(request.getStatus())) {
+            if (!"CREATED".equals(order.getOrderStatus())) {
+                throw new IllegalStateException("Order must be in CREATED state to confirm");
+            }
+            if (!"PAID".equals(order.getPaymentStatus()) && !"PARTIALLY_PAID".equals(order.getPaymentStatus())) {
+                throw new IllegalStateException("Payment must be PAID or PARTIALLY_PAID to confirm order");
+            }
+            orderService.processOrderConfirmation(orderId);
+        }
+
+        // Update fields only if provided
+        if (request.getStatus() != null) {
+            order.setOrderStatus(request.getStatus());
+        }
+        if (request.getNote() != null) {
+            order.setNote(request.getNote());
+        }
+        order.setUpdatedBy(updatedBy);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        // ✅ NEW: Update payment status from request if provided
+        if (request.getPaymentStatus() != null) {
             Payment payment = paymentService.findByOrderId(orderId);
             if (payment != null) {
-                payment.setStatus("confirmed");
+                payment.setStatus(request.getPaymentStatus());
                 paymentService.save(payment);
             }
+            // Also update order's payment_status field for consistency
+            order.setPaymentStatus(request.getPaymentStatus());
+        }
 
-            // 3. Send confirmation email
+        // Send email only on CONFIRMED
+        if ("CONFIRMED".equals(request.getStatus())) {
             emailService.sendEmail(
                 order.getCustomerEmail(),
                 "Your Order #" + order.getOrderId() + " is Confirmed!",
@@ -120,13 +141,94 @@ public class OrderController {
             );
         }
 
-        // 4. Save updated order
         Order updatedOrder = orderService.save(order);
         return ResponseEntity.ok(updatedOrder);
+    }
+
+    // Helper: Get current user's email/username
+    private String getCurrentUserEmail() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return "system";
+        }
+        if (auth.getPrincipal() instanceof UserDetails) {
+            return ((UserDetails) auth.getPrincipal()).getUsername(); // assuming email is stored as username
+        }
+        return auth.getName();
+    }
+
+    // Helper: Map order status → payment status
+    private String mapOrderStatusToPaymentStatus(String orderStatus) {
+        switch (orderStatus) {
+            case "CONFIRMED":
+                return "confirmed";
+            case "PARTIALLY_PAID":
+                return "partially_paid";
+            case "REJECTED":
+            case "FAILED":
+                return "failed";
+            case "PENDING_INFO":
+                return "pending_info";
+            default:
+                return "pending"; // fallback
+        }
+    }
+    
+    @PostMapping("/{orderId}/confirm")
+    public ResponseEntity<Order> confirmOrder(@PathVariable Long orderId) {
+        String updatedBy = getCurrentUserEmail();
+        Order order = orderService.findById(orderId);
+
+        // Validate preconditions
+        if (!"CREATED".equals(order.getOrderStatus())) {
+            throw new IllegalStateException("Order must be in CREATED state to confirm");
+        }
+        if (!"PAID".equals(order.getPaymentStatus()) && !"PARTIALLY_PAID".equals(order.getPaymentStatus())) {
+            throw new IllegalStateException("Payment must be PAID or PARTIALLY_PAID to confirm order");
+        }
+
+        // Perform confirmation (stock deduction, etc.)
+        orderService.processOrderConfirmation(orderId);
+
+        // Update order status to CONFIRMED
+        order.setOrderStatus("CONFIRMED");
+        order.setUpdatedBy(updatedBy);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        // Save and send email
+        Order updatedOrder = orderService.save(order);
+
+        emailService.sendEmail(
+            order.getCustomerEmail(),
+            "Your Order #" + order.getOrderId() + " is Confirmed!",
+            "Thank you! Your payment has been verified. We’ll process your order shortly."
+        );
+
+        return ResponseEntity.ok(updatedOrder);
+    }
+    @PostMapping("/{orderId}/ship")
+    public ResponseEntity<Void> shipOrder(@PathVariable Long orderId) {
+        String currentUser = getCurrentUserEmail();
+        orderService.shipOrder(orderId, currentUser); // ✅ 2 args
+        return ResponseEntity.ok().build();
+    }
+    
+    @PostMapping("/{orderId}/complete")
+    public ResponseEntity<Void> completeOrder(@PathVariable Long orderId) {
+        orderService.completeOrder(orderId);
+        return ResponseEntity.ok().build();
     }
     
     @GetMapping("/status/{status}")
     public List<OrderVerificationDTO> getOrdersForVerification(@PathVariable String status) {
         return orderService.getOrdersForVerification(status);
+    }
+    
+    @GetMapping("/api/test-auth")
+    public String testAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return "❌ Not authenticated";
+        if (!auth.isAuthenticated()) return "❌ Not authenticated";
+        return "✅ Logged in as: " + auth.getName();
     }
 }

@@ -2,12 +2,11 @@ package com.api.inventory.service;
 
 import java.util.List;
 
-
 import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
+import com.api.inventory.dto.PosSaleRequestDTO;
 import com.api.inventory.entity.Order;
-
 public interface OrderService {
     Order createOrder(OrderRequestDTO dto);
     void confirmOrder(Long orderId);
@@ -17,9 +16,15 @@ public interface OrderService {
     List<OrderItemResponseDTO> getOrderItemsByOrderId(Long orderId);
     Order getOrderById(Long orderId);
 	void confirmPayment(Long orderId);
-	void shipOrder(Long orderId, String shipmentId);
 	Order findById(Long id);
 	Order save(Order order);
 	List<Order> getOrdersByStatus(String status);
 	List<OrderVerificationDTO> getOrdersForVerification(String status);
+	void updatePaymentStatus(Long orderId, String paymentStatus);
+	void processOrderConfirmation(Long orderId);
+	void confirmOrderWithUser(Long orderId, String string, String note, String updatedBy);
+	void shipOrder(Long orderId, String updatedBy);
+	Order createInPersonSale(PosSaleRequestDTO request);
+	 List<Order> getPosSales();
+	  List<Order> getOnlineOrders();
 }

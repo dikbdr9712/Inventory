@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Point of Sale (Counter Sales)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://kit.fontawesome.com/33616e440d.js"crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../css/pos.css">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+      <a class="navbar-brand" href="Index.html">
+        <img src="../Images/Websites logo(Online).png" class="Logo" alt="Logo" />
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link text-dark font-weight-bold" href="Index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" href="About.html">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" href="Services.html">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" href="Product.html">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" href="orders.html">My Order</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark" href="Contact.html">Contact Us</a>
+          </li>
+          <li class="nav-item">
+            <a id="loginLink" class="nav-link text-dark" href="login.html">Login / Register</a>
+          </li>
+        </ul>
+      </div>
+  </nav>
+  <div class="container mt-4">
+    <h2>🛒 Point of Sale (Counter Sales)</h2>
+
+    <!-- Customer Info -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <input type="text" id="customerName" class="form-control" placeholder="Customer Name (Optional)">
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="customerPhone" class="form-control" placeholder="Phone (Optional)">
+      </div>
+    </div>
+
+     <!-- Item Search -->
+    <div class="mb-3 search-container">
+      <div class="input-group">
+        <input 
+          type="text" 
+          id="itemSearch" 
+          class="form-control" 
+          placeholder="🔍 Search item by name or code..." 
+          autocomplete="off"
+        >
+        <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display:none;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <ul id="searchResults" class="list-group mt-1" style="max-height:200px; overflow:auto; display:none;"></ul>
+    </div>
+
+    <!-- Multi-Tax Configuration -->
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label>Payment Method</label>
+        <select id="paymentMethod" class="form-select">
+          <option value="BANK_TRANSFER">Bank Transfer</option>
+          <option value="CARD">Card</option>
+          <option value="UPI">UPI</option>
+          <option value="CASH">Cash</option>
+        </select>
+      </div>
+
+      <!-- Add Tax Button -->
+      <div class="col-md-8">
+        <label>Taxes & Discounts</label>
+        <div class="d-flex gap-2">
+          <!-- Tax Builder -->
+          <div id="taxBuilder" class="d-flex flex-wrap gap-2"></div>
+          <button type="button" id="addTaxBtn" class="btn btn-outline-secondary btn-sm">+ Add Tax</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart -->
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Discount %</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="cartItems"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+          <td id="subtotalAmount">₹0.00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="4" class="text-end"><strong>Discount (-):</strong></td>
+          <td id="discountAmount">₹0.00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="4" class="text-end"><strong>Tax (+):</strong></td>
+          <td id="taxAmount">₹0.00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="4" class="text-end"><strong>Total:</strong></td>
+          <td id="totalAmount">₹0.00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <!-- Cash Payment Change Calculator -->
+    <div id="cashChangeSection" class="mb-3 d-none">
+      <div class="row">
+        <div class="col-md-6">
+          <label>Amount Received (₹)</label>
+          <input type="number" id="amountReceived" class="form-control" min="0" step="0.01" placeholder="Enter amount received">
+        </div>
+        <div class="col-md-6">
+          <label>Change to Return (₹)</label>
+          <input type="text" id="changeAmount" class="form-control" readonly placeholder="Auto-calculated">
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+      <button id="completeSale" class="btn btn-success btn-lg">✅ Complete Sale</button>
+      <button id="printInvoice" class="btn btn-outline-primary btn-lg d-none">🖨️ Print Invoice</button>
+    </div>
+  </div>
+
+  <!-- Invoice Preview Modal -->
+  <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="invoiceModalLabel">📄 Invoice Preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="invoicePreview">
+          <!-- Generated invoice will appear here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" id="downloadInvoice" class="btn btn-primary">📥 Download PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    <script src="../js/authNav.js"></script>
+    <script src="../js/pos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

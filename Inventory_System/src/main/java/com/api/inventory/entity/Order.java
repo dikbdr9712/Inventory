@@ -18,9 +18,12 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
-
+    @Column(name = "customer_name", nullable = true)
     private String customerName;
     private String customerEmail;
+    @Column(name = "customer_phone", nullable = true)
+    private String customerPhone;
+    private String address;
     private String orderStatus;
     
     @Column(nullable = false, precision = 12, scale = 2)
@@ -48,6 +51,14 @@ public class Order {
     
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
+    
+    @Column(name = "updated_by")
+    private String updatedBy;
+    @Column(name = "payment_method")
+    private String paymentMethod; 
+    @Column(name = "source", nullable = false)
+    private String source = "ONLINE"; // default
+
 
 	public Long getOrderId() {
 		return orderId;
@@ -71,6 +82,24 @@ public class Order {
 
 	public void setCustomerEmail(String customerEmail) {
 		this.customerEmail = customerEmail;
+	}
+	
+
+	public String getCustomerPhone() {
+		return customerPhone;
+	}
+
+	public void setCustomerPhone(String customerPhone) {
+		this.customerPhone = customerPhone;
+	}
+
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public String getOrderStatus() {
@@ -137,6 +166,30 @@ public class Order {
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
 	}
 
 	

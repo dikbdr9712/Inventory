@@ -1,23 +1,23 @@
-// src/main/java/com/api/inventory/dto/AdminOrderResponseDTO.java
 package com.api.inventory.dto;
-
-import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Data
-public class AdminOrderResponseDTO {
+public class OrderVerificationDTO {
     private Long orderId;
     private String customerName;
     private String customerEmail;
     private String orderStatus;
-    private String paymentStatus;
+    
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private List<AdminOrderItemDTO> items; // enriched with stock
+    private String note;
+    private String updatedBy;
+
+    // Payment info
+    private String paymentMethod;
+    private String journalNumber;
+    private BigDecimal paymentAmount;
 	public Long getOrderId() {
 		return orderId;
 	}
@@ -54,24 +54,38 @@ public class AdminOrderResponseDTO {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
+	public String getNote() {
+		return note;
 	}
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
+	public void setNote(String note) {
+		this.note = note;
 	}
-	public List<AdminOrderItemDTO> getItems() {
-		return items;
+	
+	public String getUpdatedBy() {
+		return updatedBy;
 	}
-	public void setItems(List<AdminOrderItemDTO> items) {
-		this.items = items;
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
 	}
-	public String getPaymentStatus() {
-		return paymentStatus;
+	public String getPaymentMethod() {
+		return paymentMethod;
 	}
-	public void setPaymentStatus(String paymentStatus) {
-		this.paymentStatus = paymentStatus;
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
 	}
+	public String getJournalNumber() {
+		return journalNumber;
+	}
+	public void setJournalNumber(String journalNumber) {
+		this.journalNumber = journalNumber;
+	}
+	public BigDecimal getPaymentAmount() {
+		return paymentAmount;
+	}
+	public void setPaymentAmount(BigDecimal paymentAmount) {
+		this.paymentAmount = paymentAmount;
+	}
+
     
     
 }

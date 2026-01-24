@@ -112,7 +112,7 @@ async function placeOrder() {
             const orderId = order.orderId;
 
             // ✅ Redirect to payment page with order ID and total
-            window.location.href = `payment.html?orderId=${orderId}&total=${totalAmount}`;
+            window.location.href = `payment(Order).html?orderId=${orderId}&total=${totalAmount}`;
         } else {
             const errorText = await response.text();
             console.error('Order creation failed:', errorText);

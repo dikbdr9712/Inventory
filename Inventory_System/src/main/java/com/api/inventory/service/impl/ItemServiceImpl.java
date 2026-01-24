@@ -40,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
         item.setItemName(dto.getItemName().trim());
         item.setDescription(dto.getDescription());
         item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-        item.setPricePerUnit(dto.getPricePerUnit());
+        item.setPricePerUnit(dto.getSellingPrice());
         item.setBarcode(dto.getBarcode());
         item.setSupplierItemCode(dto.getSupplierItemCode());
         item.setCreatedAt(LocalDateTime.now());
@@ -87,7 +87,7 @@ public class ItemServiceImpl implements ItemService {
         dto.setItemName(item.getItemName());
         dto.setDescription(item.getDescription());
         dto.setUom(item.getUom());
-        dto.setPricePerUnit(item.getPricePerUnit());
+        dto.setSellingPrice(item.getPricePerUnit());
         dto.setCurrentStock(stock != null ? stock.getCurrentQuantity() : 0);
         dto.setAvailability(stock != null ? stock.getStatus() : "Unavailable");
         dto.setCategory(item.getCategory());
@@ -114,7 +114,7 @@ public class ItemServiceImpl implements ItemService {
         existingItem.setItemName(dto.getItemName());
         existingItem.setDescription(dto.getDescription());
         existingItem.setUom(dto.getUom());
-        existingItem.setPricePerUnit(dto.getPricePerUnit());
+        existingItem.setPricePerUnit(dto.getSellingPrice());
         
         ItemMaster updatedItem = itemMasterRepository.save(existingItem);
         
@@ -152,7 +152,7 @@ public class ItemServiceImpl implements ItemService {
 	    item.setItemName(dto.getItemName().trim());
 	    item.setDescription(dto.getDescription());
 	    item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-	    item.setPricePerUnit(dto.getPricePerUnit());
+	    item.setPricePerUnit(dto.getSellingPrice());
 	    item.setBarcode(dto.getBarcode());
 	    item.setSupplierItemCode(dto.getSupplierItemCode());
 	    item.setCreatedAt(LocalDateTime.now());
@@ -215,7 +215,7 @@ public class ItemServiceImpl implements ItemService {
 	    item.setItemName(dto.getItemName().trim());
 	    item.setDescription(dto.getDescription());
 	    item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-	    item.setPricePerUnit(dto.getPricePerUnit());
+	    item.setPricePerUnit(dto.getSellingPrice());
 	    item.setBarcode(dto.getBarcode());
 	    item.setSupplierItemCode(dto.getSupplierItemCode());
 

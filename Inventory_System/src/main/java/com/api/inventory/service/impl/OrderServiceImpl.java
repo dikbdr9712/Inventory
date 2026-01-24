@@ -1,8 +1,10 @@
 package com.api.inventory.service.impl;
 
+import com.api.inventory.dto.ItemQty;
 import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
+import com.api.inventory.dto.PosSaleRequestDTO;
 import com.api.inventory.entity.*;
 import com.api.inventory.exception.OrderNotFoundException;
 import com.api.inventory.exception.ResourceNotFoundException;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,45 +46,125 @@ public class OrderServiceImpl implements OrderService {
     private ItemMasterRepository itemMasterRepository;
 	@Autowired
 	private  PaymentService paymentService; 
+	@Autowired
+	private ShipmentRepository shipmentRepository;
 
 
+	@Transactional
+	public Order createInPersonSale(PosSaleRequestDTO request) {
+	    if (request.getItems() == null || request.getItems().isEmpty()) {
+	        throw new IllegalArgumentException("At least one item is required");
+	    }
+
+	    // Validate stock & calculate total
+	    BigDecimal totalAmount = BigDecimal.ZERO;
+	    for (ItemQty item : request.getItems()) {
+	        ItemMaster master = itemMasterRepository.findById(item.getItemId())
+	                .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
+
+	        // ✅ Safety: ensure price is not null
+	        if (master.getPricePerUnit() == null) {
+	            throw new IllegalStateException("Price missing for item: " + master.getItemName());
+	        }
+
+	        InventoryStock stock = inventoryStockRepository.findByItemId(item.getItemId())
+	                .orElseThrow(() -> new RuntimeException("Stock not initialized for item: " + item.getItemId()));
+	        
+	        if (stock.getCurrentQuantity() < item.getQuantity()) {
+	            throw new IllegalStateException("Insufficient stock for item: " + master.getItemName());
+	        }
+	        
+	        totalAmount = totalAmount.add(master.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())));
+	    }
+
+	    // Create order
+	    Order order = new Order();
+	    order.setCustomerName(request.getCustomerName());
+	    order.setCustomerPhone(request.getCustomerPhone());
+	    order.setPaymentMethod(request.getPaymentMethod());
+	    order.setOrderStatus("COMPLETED");
+	    order.setPaymentStatus("PAID");
+	    order.setTotalAmount(totalAmount);
+	    order.setCreatedAt(LocalDateTime.now());
+	    order.setUpdatedAt(LocalDateTime.now());
+	    order.setSource("POS");
+
+	    Order savedOrder = orderRepository.save(order);
+
+	    // Save order items & deduct stock
+	    for (ItemQty item : request.getItems()) {
+	        ItemMaster master = itemMasterRepository.findById(item.getItemId()).get();
+
+	        // ✅ Safety: ensure unitPrice is not null
+	        BigDecimal unitPrice = master.getPricePerUnit();
+	        if (unitPrice == null) {
+	            throw new IllegalStateException("Unit price is null for item: " + master.getItemName());
+	        }
+
+	        // Save order item
+	        OrderItem orderItem = new OrderItem();
+	        orderItem.setOrderId(savedOrder.getOrderId());
+	        orderItem.setItemId(item.getItemId());
+	        orderItem.setQuantity(item.getQuantity());
+	        orderItem.setUnitPrice(unitPrice); // ← This was likely null
+	        orderItemRepository.save(orderItem);
+
+	        // Deduct stock
+	        inventoryStockRepository.adjustStockByDelta(item.getItemId(), -item.getQuantity());
+
+	        // Record transaction
+	        Transaction tx = new Transaction();
+	        tx.setItemId(item.getItemId());
+	        tx.setTransactionType("SALE");
+	        tx.setQuantity(item.getQuantity());
+	        tx.setUnitPrice(unitPrice);
+	        tx.setCustomerOrSupplier(request.getCustomerName());
+	        tx.setReferenceId(savedOrder.getOrderId());
+	        tx.setReferenceType("POS_SALE");
+	        tx.setCreatedAt(LocalDateTime.now());
+	        transactionRepository.save(tx);
+	    }
+
+	    return savedOrder;
+	}
+	
 	@Override
 	@Transactional
 	public Order createOrder(OrderRequestDTO dto) {
 	    List<OrderItem> orderItems = new ArrayList<>();
 	    BigDecimal totalAmount = BigDecimal.ZERO;
 
-	    for (OrderRequestDTO.Item item : dto.getItems()) {
-	        // ✅ Get current price from item_master (source of truth)
-	    	ItemMaster itemMaster = itemMasterRepository.findById(item.getItemId())
-	    		    .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
+	    for (OrderRequestDTO.Item item : dto.getNormalizedItems()) {
+	        ItemMaster itemMaster = itemMasterRepository.findById(item.getItemId())
+	            .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
 
-	        // ✅ Use system price — NOT client input
 	        BigDecimal unitPrice = itemMaster.getPricePerUnit();
 	        BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 	        totalAmount = totalAmount.add(lineTotal);
 
-	        // Build order item
 	        OrderItem orderItem = new OrderItem();
-	        orderItem.setOrderId(null); // will be set later
+	        orderItem.setOrderId(null);
 	        orderItem.setItemId(item.getItemId());
 	        orderItem.setQuantity(item.getQuantity());
-	        orderItem.setUnitPrice(unitPrice); // ← from item_master
+	        orderItem.setUnitPrice(unitPrice);
 	        orderItems.add(orderItem);
 	    }
 
-	    // Save order
+	    // ✅ Save order with ALL fields
 	    Order order = new Order();
 	    order.setCustomerName(dto.getCustomerName());
-	    order.setCustomerEmail(dto.getCustomerEmail());
-	    order.setOrderStatus("CREATED"); // or "PENDING_PAYMENT"
+	    order.setCustomerEmail(dto.getCustomerEmail());   // ← ADD THIS
+	    order.setCustomerPhone(dto.getCustomerPhone());
+	    order.setAddress(dto.getAddress());               // ← ADD THIS
+	    order.setOrderStatus("CREATED");
 	    order.setPaymentStatus("PENDING");
 	    order.setTotalAmount(totalAmount);
 	    order.setCreatedAt(LocalDateTime.now());
 	    order.setUpdatedAt(LocalDateTime.now());
+	    order.setSource("ONLINE");
+	    
 	    Order savedOrder = orderRepository.save(order);
 
-	    // Set orderId and save items
 	    for (OrderItem item : orderItems) {
 	        item.setOrderId(savedOrder.getOrderId());
 	        orderItemRepository.save(item);
@@ -89,15 +172,72 @@ public class OrderServiceImpl implements OrderService {
 
 	    return savedOrder;
 	}
+	
+	@Transactional
+	public void processOrderConfirmation(Long orderId) {
+	    Order order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new RuntimeException("Order not found"));
 
+	    // Optional: re-validate state (safe guard)
+	    if (!"CREATED".equals(order.getOrderStatus())) {
+	        throw new IllegalStateException("Order must be in CREATED state to confirm");
+	    }
+	    if (!"PAID".equals(order.getPaymentStatus()) && !"PARTIALLY_PAID".equals(order.getPaymentStatus())) {
+	        throw new IllegalStateException("Payment must be PAID or PARTIALLY_PAID");
+	    }
+
+	    List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+
+	    // ✅ Validate stock
+	    for (OrderItem item : items) {
+	        InventoryStock stock = inventoryStockRepository.findByItemId(item.getItemId())
+	                .orElseThrow(() -> new RuntimeException("Stock not initialized for item: " + item.getItemId()));
+	        if (stock.getCurrentQuantity() < item.getQuantity()) {
+	            throw new IllegalStateException("Insufficient stock for item ID: " + item.getItemId());
+	        }
+	    }
+
+	    // ✅ Deduct stock & record transactions
+	    for (OrderItem item : items) {
+	        inventoryStockRepository.adjustStockByDelta(item.getItemId(), -item.getQuantity());
+
+	        Transaction tx = new Transaction();
+	        tx.setItemId(item.getItemId());
+	        tx.setTransactionType("SALE");
+	        tx.setQuantity(item.getQuantity());
+	        tx.setUnitPrice(item.getUnitPrice());
+	        tx.setCustomerOrSupplier(order.getCustomerName());
+	        tx.setReferenceId(orderId);
+	        tx.setReferenceType("ORDER");
+	        tx.setCreatedAt(LocalDateTime.now());
+	        transactionRepository.save(tx);
+	    }
+	}
+	
+
+	@Override
+	public List<Order> getPosSales() {
+	    return orderRepository.findBySource("POS");
+	}
+
+	@Override
+	public List<Order> getOnlineOrders() {
+	    return orderRepository.findBySource("ONLINE");
+	}
+	
     @Override
     @Transactional
     public void confirmOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        if (!"PENDING".equals(order.getOrderStatus())) {
-            throw new IllegalStateException("Order is not pending");
+        if (!"PAID".equals(order.getPaymentStatus())) {
+            throw new IllegalStateException("Payment must be completed before confirming order");
+        }
+        Set<String> allowedPaymentStatuses = Set.of("PAID", "PARTIALLY_PAID");
+        
+        if (!allowedPaymentStatuses.contains(order.getPaymentStatus())) {
+            throw new IllegalStateException("Order payment status must be PAID or PARTIALLY_PAID to confirm");
         }
 
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
@@ -134,6 +274,26 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("CONFIRMED");
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
+    }
+    
+    public void confirmOrderWithUser(Long orderId, String status, String note, String updatedBy) {
+        Order order = findById(orderId);
+
+        if ("CONFIRMED".equals(status)) {
+            if (!"CREATED".equals(order.getOrderStatus())) {
+                throw new IllegalStateException("Order must be in CREATED state");
+            }
+            if (!"PAID".equals(order.getPaymentStatus()) && !"PARTIALLY_PAID".equals(order.getPaymentStatus())) {
+                throw new IllegalStateException("Payment must be PAID or PARTIALLY_PAID");
+            }
+            processOrderConfirmation(orderId);
+        }
+
+        order.setOrderStatus(status);
+        order.setNote(note);
+        order.setUpdatedBy(updatedBy); // ✅ Now valid — it's a parameter
+        order.setUpdatedAt(LocalDateTime.now());
+        save(order);
     }
 
     @Override
@@ -175,8 +335,9 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        if (!"CONFIRMED".equals(order.getOrderStatus())) {
-            throw new IllegalStateException("Only CONFIRMED orders can be completed");
+        // ✅ Allow completion only if order is SHIPPED
+        if (!"SHIPPED".equals(order.getOrderStatus())) {
+            throw new IllegalStateException("Only SHIPPED orders can be completed");
         }
 
         order.setOrderStatus("COMPLETED"); 
@@ -262,27 +423,42 @@ public class OrderServiceImpl implements OrderService {
         }
     }
    
+    @Transactional
+    public void shipOrder(Long orderId, String updatedBy) {
+        Order order = findById(orderId);
 
-
-    @Override
-    public void shipOrder(Long orderId, String shipmentId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
-        
         if (!"CONFIRMED".equals(order.getOrderStatus())) {
-            throw new IllegalStateException("Order must be confirmed before shipping");
+            throw new IllegalStateException("Order must be CONFIRMED to ship");
         }
-        
-        // ✅ Use provided ID, or generate if null/empty
-        String finalShipmentId = shipmentId;
-        if (shipmentId == null || shipmentId.trim().isEmpty()) {
-            finalShipmentId = "SHIP-" + LocalDate.now().getYear() + "-" + 
-                              String.format("%04d", order.getOrderId());
-        }
-        
+
+        // ✅ Generate shipment ID automatically
+        String shipmentId = generateShipmentId();
+
+        Shipment shipment = new Shipment();
+        shipment.setShipmentId(shipmentId);
+        shipment.setOrder(order);
+        shipment.setShippedAt(LocalDateTime.now());
+        shipment.setStatus("SHIPPED");
+        shipment.setCreatedBy(updatedBy);
+        shipment.setCreatedAt(LocalDateTime.now());
+
+        shipmentRepository.save(shipment);
+
         order.setOrderStatus("SHIPPED");
-        order.setShipmentId(finalShipmentId);
-        orderRepository.save(order);
+        order.setUpdatedBy(updatedBy);
+        order.setUpdatedAt(LocalDateTime.now());
+        save(order);
+    }
+
+    // Helper: Generate SHP-YYYYMMDD-NNN
+    private String generateShipmentId() {
+        LocalDate today = LocalDate.now();
+        String datePart = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+        // Get next sequence number (simplified — use DB sequence or Redis in prod)
+        long nextSeq = shipmentRepository.count() + 1;
+        
+        return "SHP-" + datePart + "-" + String.format("%04d", nextSeq);
     }
 
     @Override
@@ -323,5 +499,14 @@ public class OrderServiceImpl implements OrderService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void updatePaymentStatus(Long orderId, String paymentStatus) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        order.setPaymentStatus(paymentStatus);
+        orderRepository.save(order);
     }
 }

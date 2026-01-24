@@ -2,9 +2,13 @@
 package com.api.inventory.controller;
 
 import com.api.inventory.dto.AdminOrderResponseDTO;
+import com.api.inventory.dto.VerificationRequestDTO;
 import com.api.inventory.service.AdminOrderService;
+import com.api.inventory.service.OrderService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,8 @@ import java.util.List;
 public class AdminOrderController {
 	@Autowired
     private AdminOrderService adminOrderService;
+	@Autowired
+	private OrderService orderService;
 
     @GetMapping
     public ResponseEntity<List<AdminOrderResponseDTO>> getAllOrders() {
@@ -25,8 +31,27 @@ public class AdminOrderController {
 
     @PostMapping("/{orderId}/confirm")
     public ResponseEntity<Void> confirmOrder(@PathVariable Long orderId) {
-        adminOrderService.confirmOrder(orderId);
+        String updatedBy = getCurrentUserEmail();
+        
+        VerificationRequestDTO dto = new VerificationRequestDTO();
+        dto.setStatus("CONFIRMED");
+        dto.setNote("Confirmed via admin quick-action");
+
+        // ✅ Now works!
+        orderService.confirmOrderWithUser(orderId, "CONFIRMED", dto.getNote(), updatedBy);
+
         return ResponseEntity.ok().build();
+    }
+    
+    private String getCurrentUserEmail() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return "system";
+        }
+        if (auth.getPrincipal() instanceof UserDetails) {
+            return ((UserDetails) auth.getPrincipal()).getUsername(); // assumes email is username
+        }
+        return auth.getName();
     }
 
     @PostMapping("/{orderId}/cancel")

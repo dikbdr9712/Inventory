@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Your Purchase</title>
+  <link rel="stylesheet" href="../css/payment.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <script src="https://kit.fontawesome.com/33616e440d.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+    <a class="navbar-brand" href="Index.html">
+      <img src="../Images/Websites logo(Online).png" class="Logo" alt="Green Pathway" style="height: 40px;" />
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link text-dark" href="Index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="Product.html">Products</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="cart.html">Cart</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="orders.html">My Orders</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" href="Contact.html">Contact Us</a></li>
+        <li class="nav-item"><a id="loginLink" class="nav-link text-dark" href="login.html">Login / Register</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container mt-4">
+    <h2>💳 Complete Your Purchase</h2>
+    <hr />
+
+    <!-- Order Summary -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>Order Summary</h5>
+        <div id="order-summary">
+          <!-- Will be filled by JS -->
+        </div>
+      </div>    
+    </div>
+
+    <!-- Payment Method Selection -->
+    <div class="form-group">
+      <label><strong>Select Payment Method</strong></label><br>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="method1" value="cod" checked>
+        <label class="form-check-label" for="method1">Cash on Delivery</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="paymentMethod" id="method2" value="bank">
+        <label class="form-check-label" for="method2">Bank Transfer</label>
+      </div>
+    </div>
+
+    <!-- Bank Details (shown only when selected) -->
+    <div id="bank-details" style="display: none;">
+      <h6>🏦 Bank Transfer Instructions:</h6>
+      <p><strong>Account Name:</strong> Pharmith Lepcha</p>
+      <p><strong>Account Number:</strong> 216358950</p>
+      <p><strong>Bank:</strong> Bank of Bhutan</p>
+      <p><strong>Reference:</strong> Order #<span id="order-id-ref"></span></p>
+
+      <!-- QR Code -->
+      <div class="qr-code-container text-center mb-3">
+        <img src="../Images/QR.jpeg" alt="Bank QR Code" id="qr-code-img" style="max-width: 150px; height: auto; border: 1px solid #ddd; border-radius: 8px;">
+        <p class="mt-2 small text-muted">Scan this QR code to pay via mobile banking</p>
+      </div>
+
+      <!-- Journal Number Input -->
+      <div class="journal-input">
+        <label for="journalNumber">Enter Transaction Journal Number:</label>
+        <input type="text" class="form-control" id="journalNumber" placeholder="e.g., TXN20260109ABC">
+        <small class="form-text text-muted">This helps us verify your payment.</small>
+      </div>
+
+      <p class="text-muted mt-3">After payment, please notify us via email or WhatsApp.</p>
+    </div>
+
+    <!-- Billing Info -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5>Billing Information</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="form-control" id="billingName" placeholder="Enter full name" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" class="form-control" id="billingPhone" placeholder="Enter phone number" required>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea class="form-control" id="billingAddress" rows="3" placeholder="Enter delivery address" required></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place Order Button -->
+    <div class="text-center">
+      <button id="placeOrderBtn" class="btn btn-success btn-lg">✅ Place Order</button>
+    </div>
+
+    <div class="mt-4">
+      <a href="Product.html" class="btn btn-outline-secondary">← Back to Products</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-light py-4 mt-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center text-md-left mb-3 mb-md-0">
+          <h5>DK/Phar Inventory Management System</h5>
+          <p class="text-muted small">
+            Phone: 77269712<br />
+            Email: dikbdrghalley12@gmail.com<br />
+            Thimphu/Phuentsholing, Bhutan
+          </p>
+        </div>
+        <div class="col-md-4 text-center mb-3 mb-md-0">
+          <h6>Follow us</h6>
+          <div class="d-flex justify-content-center gap-3 mt-2">
+            <a href="https://www.facebook.com/pharmith.lepcha.2025" class="text-decoration-none">
+              <i class="fa-brands fa-facebook fa-2x" style="color: #3053ab;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-instagram fa-2x" style="color: #d01b8d;"></i>
+            </a>
+            <a href="#" class="text-decoration-none">
+              <i class="fa-brands fa-youtube fa-2x" style="color: #f90b47;"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <img src="../Images/thumbBoy-removebg-preview.png" alt="Support" class="img-fluid" style="max-height: 120px;" />
+        </div>
+      </div>
+      <hr class="my-4" />
+      <div class="text-center text-muted">&copy; Inventory Management System 2025</div>
+    </div>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <script src="../js/payment.js"></script>
+  <script src="../js/authNav.js"></script>
+</body>
+</html>
