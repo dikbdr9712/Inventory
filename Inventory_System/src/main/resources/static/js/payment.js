@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ? `http://localhost:8080${currentItem.imagePath}` 
       : '../Images/default.jpg';
 
-    const price = currentItem.pricePerUnit || 0;
+    const price = currentItem.sellingPrice || 0;
     const stock = currentItem.currentStock || 0;
     const uom = currentItem.uom || 'pcs';
 
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (qty > max) qty = max;
     qtyInput.value = qty;
 
-    const total = currentItem.pricePerUnit * qty;
+    const total = currentItem.sellingPrice * qty;
     document.getElementById('totalAmount').textContent = `Nu. ${total.toFixed(2)}`;
   }
 
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const total = currentItem.pricePerUnit * quantity;
+    const total = currentItem.sellingPrice * quantity;
 
     // Handle journal number for bank payments
     let journalNumber = '';
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
           {
             itemId: parseInt(itemId),
             quantity: quantity,
-            unitPrice: currentItem.pricePerUnit
+            unitPrice: currentItem.sellingPrice
           }
         ]
       };

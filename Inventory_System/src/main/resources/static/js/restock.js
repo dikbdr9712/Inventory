@@ -127,8 +127,8 @@ function showNewItemForm(term) {
         request.itemName = newItemName;
         request.description = document.getElementById('newDescription').value.trim() || null;
         request.uom = document.getElementById('newUom').value || 'nbr';
-        request.pricePerUnit = document.getElementById('newPricePerUnit').value 
-          ? parseFloat(document.getElementById('newPricePerUnit').value) : null;
+        request.sellingPrice = document.getElementById('newsellingPrice').value 
+          ? parseFloat(document.getElementById('newsellingPrice').value) : null;
         request.barcode = document.getElementById('newBarcode').value.trim() || null;
         request.supplierItemCode = document.getElementById('newSupplierItemCode').value.trim() || null;
     }

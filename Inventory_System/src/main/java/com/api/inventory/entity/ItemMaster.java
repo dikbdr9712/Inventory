@@ -61,16 +61,6 @@ public class ItemMaster {
             this.createdAt = LocalDateTime.now();
         }
     }
-
-    // Optional: If you still want to support old 'pricePerUnit' for backward compatibility
-    // You can map it to sellingPrice
-    public BigDecimal getPricePerUnit() {
-        return this.sellingPrice;
-    }
-
-    public void setPricePerUnit(BigDecimal pricePerUnit) {
-        this.sellingPrice = pricePerUnit;
-    }
     
     private LocalDateTime createdAt;
     @Column(name = "category", length = 100)

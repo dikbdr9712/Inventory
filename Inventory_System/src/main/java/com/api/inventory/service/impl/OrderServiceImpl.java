@@ -63,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
 	                .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
 
 	        // ✅ Safety: ensure price is not null
-	        if (master.getPricePerUnit() == null) {
+	        if (master.getSellingPrice() == null) {
 	            throw new IllegalStateException("Price missing for item: " + master.getItemName());
 	        }
 
@@ -74,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
 	            throw new IllegalStateException("Insufficient stock for item: " + master.getItemName());
 	        }
 	        
-	        totalAmount = totalAmount.add(master.getPricePerUnit().multiply(BigDecimal.valueOf(item.getQuantity())));
+	        totalAmount = totalAmount.add(master.getSellingPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
 	    }
 
 	    // Create order
@@ -96,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 	        ItemMaster master = itemMasterRepository.findById(item.getItemId()).get();
 
 	        // ✅ Safety: ensure unitPrice is not null
-	        BigDecimal unitPrice = master.getPricePerUnit();
+	        BigDecimal unitPrice = master.getSellingPrice();
 	        if (unitPrice == null) {
 	            throw new IllegalStateException("Unit price is null for item: " + master.getItemName());
 	        }
@@ -138,7 +138,7 @@ public class OrderServiceImpl implements OrderService {
 	        ItemMaster itemMaster = itemMasterRepository.findById(item.getItemId())
 	            .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
 
-	        BigDecimal unitPrice = itemMaster.getPricePerUnit();
+	        BigDecimal unitPrice = itemMaster.getSellingPrice();
 	        BigDecimal lineTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
 	        totalAmount = totalAmount.add(lineTotal);
 

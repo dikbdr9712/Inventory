@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -40,7 +41,8 @@ public class ItemServiceImpl implements ItemService {
         item.setItemName(dto.getItemName().trim());
         item.setDescription(dto.getDescription());
         item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-        item.setPricePerUnit(dto.getSellingPrice());
+        item.setCostPrice(dto.getCostPrice());
+        item.setSellingPrice(dto.getSellingPrice());
         item.setBarcode(dto.getBarcode());
         item.setSupplierItemCode(dto.getSupplierItemCode());
         item.setCreatedAt(LocalDateTime.now());
@@ -87,7 +89,7 @@ public class ItemServiceImpl implements ItemService {
         dto.setItemName(item.getItemName());
         dto.setDescription(item.getDescription());
         dto.setUom(item.getUom());
-        dto.setSellingPrice(item.getPricePerUnit());
+        dto.setSellingPrice(item.getSellingPrice());
         dto.setCurrentStock(stock != null ? stock.getCurrentQuantity() : 0);
         dto.setAvailability(stock != null ? stock.getStatus() : "Unavailable");
         dto.setCategory(item.getCategory());
@@ -114,7 +116,7 @@ public class ItemServiceImpl implements ItemService {
         existingItem.setItemName(dto.getItemName());
         existingItem.setDescription(dto.getDescription());
         existingItem.setUom(dto.getUom());
-        existingItem.setPricePerUnit(dto.getSellingPrice());
+        existingItem.setSellingPrice(dto.getSellingPrice());
         
         ItemMaster updatedItem = itemMasterRepository.save(existingItem);
         
@@ -147,49 +149,49 @@ public class ItemServiceImpl implements ItemService {
 	        throw new IllegalArgumentException("Item name is required");
 	    }
 
-	    // Save item first to get ID
 	    ItemMaster item = new ItemMaster();
 	    item.setItemName(dto.getItemName().trim());
 	    item.setDescription(dto.getDescription());
 	    item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-	    item.setPricePerUnit(dto.getSellingPrice());
+	    
+	    // ✅ CRITICAL: Set costPrice and category
+	    item.setCostPrice(dto.getCostPrice() != null ? dto.getCostPrice() : BigDecimal.ZERO);
+	    item.setSellingPrice(dto.getSellingPrice() != null ? dto.getSellingPrice() : item.getCostPrice());
+	    item.setCategory(dto.getCategory() != null ? dto.getCategory().trim() : "Uncategorized");
+	    
+	    // Optional fields
 	    item.setBarcode(dto.getBarcode());
 	    item.setSupplierItemCode(dto.getSupplierItemCode());
-	    item.setCreatedAt(LocalDateTime.now());
-	    // Generate temporary SKU to pass DB constraint
+	    item.setDiscountAllowed(dto.getDiscountAllowed() != null ? dto.getDiscountAllowed() : true);
+	    item.setMaxDiscountPercent(
+	        dto.getMaxDiscountPercent() != null ? dto.getMaxDiscountPercent() : new BigDecimal("100.00")
+	    );
+	    item.setTaxRate(dto.getTaxRate() != null ? dto.getTaxRate() : BigDecimal.ZERO);
+
+	    // Generate temporary SKU
 	    item.setSku("TEMP-" + System.currentTimeMillis());
 	    ItemMaster savedItem = itemMasterRepository.save(item);
 
-	    // Now set final SKU
+	    // Update with real SKU
 	    String finalSku = "ITEM-" + savedItem.getItemId();
 	    savedItem.setSku(finalSku);
 	    itemMasterRepository.save(savedItem);
 
-	    // ✅ Handle image upload
+	    // Handle image
 	    if (imageFile != null && !imageFile.isEmpty()) {
 	        try {
-	            // Clean filename
-	            String rawName = savedItem.getItemName();
-	            String cleanName = rawName
-	                .toLowerCase()
-	                .replaceAll("[^a-z0-9]", "");
+	            String cleanName = savedItem.getItemName().toLowerCase().replaceAll("[^a-z0-9]", "");
 	            cleanName = cleanName.substring(0, Math.min(50, cleanName.length()));
 	            String filename = cleanName + ".jpg";
 
-	            // Save to "uploads" folder in project root
-	            String uploadDirPath = System.getProperty("user.dir") + "/uploads";
-	            Path uploadDir = Paths.get(uploadDirPath);
-	            if (!Files.exists(uploadDir)) {
-	                Files.createDirectories(uploadDir);
-	            }
+	            Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads");
+	            Files.createDirectories(uploadDir);
 	            Path filePath = uploadDir.resolve(filename);
 	            Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-	            // Set image path to match new location
 	            savedItem.setImagePath("/uploads/" + filename);
-	            itemMasterRepository.save(savedItem); // Save again to persist imagePath
+	            itemMasterRepository.save(savedItem);
 	            System.out.println("Saved item with imagePath: " + savedItem.getImagePath());
-
 	        } catch (IOException e) {
 	            System.err.println("Failed to save image: " + e.getMessage());
 	        }
@@ -215,7 +217,7 @@ public class ItemServiceImpl implements ItemService {
 	    item.setItemName(dto.getItemName().trim());
 	    item.setDescription(dto.getDescription());
 	    item.setUom(dto.getUom() != null ? dto.getUom().trim() : "pcs");
-	    item.setPricePerUnit(dto.getSellingPrice());
+	    item.setSellingPrice(dto.getSellingPrice());
 	    item.setBarcode(dto.getBarcode());
 	    item.setSupplierItemCode(dto.getSupplierItemCode());
 

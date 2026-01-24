@@ -128,7 +128,7 @@ public class TransactionServiceImpl implements TransactionService {
             newItem.setUom("pcs"); // default unit of measure
         }
         if (request.getPricePerUnit() != null) {
-            newItem.setPricePerUnit(request.getPricePerUnit());
+            newItem.setSellingPrice(request.getPricePerUnit());
         }
         if (request.getBarcode() != null) {
             newItem.setBarcode(request.getBarcode().trim());

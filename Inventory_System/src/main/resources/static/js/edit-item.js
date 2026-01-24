@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('itemName').value = item.itemName || '';
       document.getElementById('description').value = item.description || '';
       document.getElementById('uom').value = item.uom || 'pcs';
-      document.getElementById('pricePerUnit').value = item.pricePerUnit || '';
+      document.getElementById('sellingPrice').value = item.sellingPrice || '';
       document.getElementById('barcode').value = item.barcode || '';
       document.getElementById('supplierItemCode').value = item.supplierItemCode || '';
 
@@ -67,9 +67,9 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append('description', document.getElementById('description').value.trim() || '');
     formData.append('uom', document.getElementById('uom').value || 'pcs');
     
-    const pricePerUnit = document.getElementById('pricePerUnit').value.trim();
-    if (pricePerUnit) {
-        formData.append('pricePerUnit', pricePerUnit);
+    const sellingPrice = document.getElementById('sellingPrice').value.trim();
+    if (sellingPrice) {
+        formData.append('sellingPrice', sellingPrice);
     }
 
     formData.append('barcode', document.getElementById('barcode').value.trim() || '');

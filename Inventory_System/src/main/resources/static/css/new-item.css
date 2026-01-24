@@ -1,11 +1,8 @@
-/* new-item.css */
-
+/* Reset only what's necessary — do NOT reset * globally */
 body {
-  font-family: Arial, sans-serif;
-  padding: 20px;
-  max-width: 700px;
-  margin: 0 auto;
-  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 h2 {
@@ -14,10 +11,12 @@ h2 {
   margin-bottom: 25px;
 }
 
+/* Keep your form-group spacing */
 .form-group {
   margin-bottom: 20px;
 }
 
+/* Labels */
 label {
   display: block;
   margin-bottom: 6px;
@@ -25,6 +24,7 @@ label {
   color: #495057;
 }
 
+/* Custom input styles — compatible with Bootstrap */
 input,
 textarea,
 select {
@@ -34,6 +34,7 @@ select {
   border-radius: 4px;
   box-sizing: border-box;
   font-size: 15px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 input:focus,
@@ -44,7 +45,16 @@ select:focus {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-button {
+/* File input style (Bootstrap doesn't fully style file inputs) */
+input[type="file"] {
+  padding: 6px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+}
+
+/* Button styling */
+button[type="submit"] {
   background-color: #28a745;
   color: white;
   border: none;
@@ -54,17 +64,19 @@ button {
   cursor: pointer;
   width: 100%;
   margin-top: 10px;
+  font-weight: bold;
 }
 
-button:hover {
+button[type="submit"]:hover {
   background-color: #218838;
 }
 
-button:disabled {
+button[type="submit"]:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
 
+/* Message alerts */
 #message {
   margin-top: 15px;
   padding: 10px;
@@ -85,10 +97,10 @@ button:disabled {
   border: 1px solid #c3e6cb;
 }
 
-/* Responsive padding */
+/* Responsive adjustments */
 @media (max-width: 600px) {
-  body {
-    padding: 15px;
+  .container {
+    padding: 0 15px;
   }
 
   h2 {
@@ -100,6 +112,6 @@ button:disabled {
   select,
   button {
     padding: 12px;
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px; /* Prevents iOS zoom */
   }
 }
