@@ -5,6 +5,7 @@ import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
 import com.api.inventory.dto.PosSaleRequestDTO;
+import com.api.inventory.dto.TaxInfoDTO;
 import com.api.inventory.entity.*;
 import com.api.inventory.exception.OrderNotFoundException;
 import com.api.inventory.exception.ResourceNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,6 +34,9 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
     private OrderRepository orderRepository;
+	
+	@Autowired
+	private TaxDetailRepository taxDetailRepository;
 	
 	@Autowired
     private OrderItemRepository orderItemRepository;
@@ -56,68 +61,95 @@ public class OrderServiceImpl implements OrderService {
 	        throw new IllegalArgumentException("At least one item is required");
 	    }
 
-	    // Validate stock & calculate total
-	    BigDecimal totalAmount = BigDecimal.ZERO;
+	    // 1. Calculate SUBTOTAL
+	    BigDecimal subtotal = BigDecimal.ZERO;
 	    for (ItemQty item : request.getItems()) {
 	        ItemMaster master = itemMasterRepository.findById(item.getItemId())
 	                .orElseThrow(() -> new RuntimeException("Item not found: " + item.getItemId()));
-
-	        // ✅ Safety: ensure price is not null
 	        if (master.getSellingPrice() == null) {
 	            throw new IllegalStateException("Price missing for item: " + master.getItemName());
 	        }
-
 	        InventoryStock stock = inventoryStockRepository.findByItemId(item.getItemId())
-	                .orElseThrow(() -> new RuntimeException("Stock not initialized for item: " + item.getItemId()));
-	        
+	                .orElseThrow(() -> new RuntimeException("Stock not initialized"));
 	        if (stock.getCurrentQuantity() < item.getQuantity()) {
 	            throw new IllegalStateException("Insufficient stock for item: " + master.getItemName());
 	        }
-	        
-	        totalAmount = totalAmount.add(master.getSellingPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+	        subtotal = subtotal.add(master.getSellingPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
 	    }
 
-	    // Create order
+	    // 2. Apply discount
+	    BigDecimal discountTotal = (request.getDiscountTotal() != null) 
+	        ? request.getDiscountTotal() 
+	        : BigDecimal.ZERO;
+	    if (discountTotal.compareTo(subtotal) > 0) discountTotal = subtotal;
+	    BigDecimal amountAfterDiscount = subtotal.subtract(discountTotal);
+
+	    // 3. Calculate TOTAL TAX and prepare tax details
+	    BigDecimal totalTax = BigDecimal.ZERO;
+	    List<TaxDetail> taxDetailsToSave = new ArrayList<>();
+
+	    if (request.getTaxes() != null) {
+	        for (TaxInfoDTO taxInfo : request.getTaxes()) {
+	            if (taxInfo.getRate() != null && taxInfo.getRate() > 0) {
+	                BigDecimal rate = BigDecimal.valueOf(taxInfo.getRate());
+	                BigDecimal taxAmount = amountAfterDiscount
+	                    .multiply(rate)
+	                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+	                
+	                totalTax = totalTax.add(taxAmount);
+
+	                // 👇 Prepare TaxDetail object (will be saved later)
+	                TaxDetail detail = new TaxDetail();
+	                detail.setTaxType(taxInfo.getType());
+	                detail.setRate(rate);
+	                detail.setAmount(taxAmount);
+	                taxDetailsToSave.add(detail);
+	            }
+	        }
+	    }
+
+	    // 4. Final total
+	    BigDecimal finalTotal = amountAfterDiscount.add(totalTax);
+
+	    // 5. Create and save ORDER
 	    Order order = new Order();
 	    order.setCustomerName(request.getCustomerName());
 	    order.setCustomerPhone(request.getCustomerPhone());
 	    order.setPaymentMethod(request.getPaymentMethod());
 	    order.setOrderStatus("COMPLETED");
 	    order.setPaymentStatus("PAID");
-	    order.setTotalAmount(totalAmount);
+	    order.setSource("POS");
+	    order.setTotalAmount(finalTotal);
+	    order.setDiscountAmount(discountTotal);
+	    order.setTaxAmount(totalTax); // still keep total for reporting
 	    order.setCreatedAt(LocalDateTime.now());
 	    order.setUpdatedAt(LocalDateTime.now());
-	    order.setSource("POS");
 
 	    Order savedOrder = orderRepository.save(order);
 
-	    // Save order items & deduct stock
+	    // 6. ✅ Link and save tax details
+	    for (TaxDetail detail : taxDetailsToSave) {
+	        detail.setOrder(savedOrder); // link to order
+	    }
+	    taxDetailRepository.saveAll(taxDetailsToSave);
+
+	    // 7. Save order items & deduct stock (unchanged)
 	    for (ItemQty item : request.getItems()) {
 	        ItemMaster master = itemMasterRepository.findById(item.getItemId()).get();
-
-	        // ✅ Safety: ensure unitPrice is not null
-	        BigDecimal unitPrice = master.getSellingPrice();
-	        if (unitPrice == null) {
-	            throw new IllegalStateException("Unit price is null for item: " + master.getItemName());
-	        }
-
-	        // Save order item
 	        OrderItem orderItem = new OrderItem();
 	        orderItem.setOrderId(savedOrder.getOrderId());
 	        orderItem.setItemId(item.getItemId());
 	        orderItem.setQuantity(item.getQuantity());
-	        orderItem.setUnitPrice(unitPrice); // ← This was likely null
+	        orderItem.setUnitPrice(master.getSellingPrice());
 	        orderItemRepository.save(orderItem);
 
-	        // Deduct stock
 	        inventoryStockRepository.adjustStockByDelta(item.getItemId(), -item.getQuantity());
 
-	        // Record transaction
 	        Transaction tx = new Transaction();
 	        tx.setItemId(item.getItemId());
 	        tx.setTransactionType("SALE");
 	        tx.setQuantity(item.getQuantity());
-	        tx.setUnitPrice(unitPrice);
+	        tx.setUnitPrice(master.getSellingPrice());
 	        tx.setCustomerOrSupplier(request.getCustomerName());
 	        tx.setReferenceId(savedOrder.getOrderId());
 	        tx.setReferenceType("POS_SALE");

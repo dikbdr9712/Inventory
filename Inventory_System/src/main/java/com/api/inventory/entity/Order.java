@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -25,6 +26,11 @@ public class Order {
     private String customerPhone;
     private String address;
     private String orderStatus;
+    @Column(name = "tax_amount", precision = 12, scale = 2)
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
+    @Column(name = "discount_amount", precision = 12, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
     
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
@@ -58,6 +64,8 @@ public class Order {
     private String paymentMethod; 
     @Column(name = "source", nullable = false)
     private String source = "ONLINE"; // default
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<TaxDetail> taxDetails;
 
 
 	public Long getOrderId() {
@@ -108,6 +116,24 @@ public class Order {
 
 	public void setOrderStatus(String orderStatus) {
 		this.orderStatus = orderStatus;
+	}
+	
+	
+
+	public BigDecimal getTaxAmount() {
+		return taxAmount;
+	}
+
+	public void setTaxAmount(BigDecimal taxAmount) {
+		this.taxAmount = taxAmount;
+	}
+
+	public BigDecimal getDiscountAmount() {
+		return discountAmount;
+	}
+
+	public void setDiscountAmount(BigDecimal discountAmount) {
+		this.discountAmount = discountAmount;
 	}
 
 	public BigDecimal getTotalAmount() {
@@ -190,6 +216,14 @@ public class Order {
 
 	public void setSource(String source) {
 		this.source = source;
+	}
+
+	public List<TaxDetail> getTaxDetails() {
+		return taxDetails;
+	}
+
+	public void setTaxDetails(List<TaxDetail> taxDetails) {
+		this.taxDetails = taxDetails;
 	}
 
 	

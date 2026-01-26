@@ -8,6 +8,8 @@ public class PosSaleRequestDTO {
     private String customerName;
     private String customerPhone;
     private String paymentMethod; // "CASH", "CARD", "UPI", etc.
+    private java.math.BigDecimal discountTotal; // total discount amount (not %)
+    private List<TaxInfoDTO> taxes;               // list of applied taxes
     private List<ItemQty> items;
 	public String getCustomerName() {
 		return customerName;
@@ -32,6 +34,18 @@ public class PosSaleRequestDTO {
 	}
 	public void setItems(List<ItemQty> items) {
 		this.items = items;
+	}
+	public java.math.BigDecimal getDiscountTotal() {
+		return discountTotal;
+	}
+	public void setDiscountTotal(java.math.BigDecimal discountTotal) {
+		this.discountTotal = discountTotal;
+	}
+	public List<TaxInfoDTO> getTaxes() {
+		return taxes;
+	}
+	public void setTaxes(List<TaxInfoDTO> taxes) {
+		this.taxes = taxes;
 	}
     
     

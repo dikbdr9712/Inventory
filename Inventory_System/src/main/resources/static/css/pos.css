@@ -71,6 +71,20 @@
 #cashChangeSection .form-control {
   font-size: 1rem;
 }
+
+/* Ensure tax builder items align properly */
+#taxBuilder .tax-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+#taxBuilder .tax-item select,
+#taxBuilder .tax-item input {
+  margin-right: 5px;
+  height: 34px;
+}
   /* Complete Sale Button */
   #completeSale {
     width: 100%;

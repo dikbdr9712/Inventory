@@ -2,7 +2,7 @@ let cart = [];
 let allItems = [];
 let currentOrder = null;
 let highlightedIndex = -1;
-let appliedTaxes = []; // Supports multiple taxes: [{ type: 'GST', rate: 18 }, { type: 'ET', rate: 2 }]
+let appliedTaxes = []; // Supports multiple taxes: [{ type: 'GST', rate: 5 }, { type: 'ET', rate: 2 }]
 
 // Load all items on page load
 async function loadItems() {
@@ -131,14 +131,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const addTaxBtn = document.getElementById('addTaxBtn');
   if (addTaxBtn) {
     addTaxBtn.addEventListener('click', () => {
-      appliedTaxes.push({ type: 'GST', rate: 0 });
+      appliedTaxes.push({ 
+        type: 'GST', 
+        rate: 5,
+        manuallyEdited: false 
+      });
       renderTaxBuilder();
       renderCart();
     });
   }
 
-  // Initialize with one tax
-  appliedTaxes = [{ type: 'NONE', rate: 0 }];
+  // Initialize with one GST tax at 5%
+  appliedTaxes = [{ 
+    type: 'GST', 
+    rate: 5, 
+    manuallyEdited: false 
+  }];
   renderTaxBuilder();
 
   // Initial render
@@ -271,9 +279,12 @@ function renderTaxBuilder() {
     container.appendChild(taxDiv);
   });
 
-  // Attach event listeners
-  container.querySelectorAll('.tax-type, .tax-rate').forEach(el => {
+  // Reattach listeners
+  container.querySelectorAll('.tax-type').forEach(el => {
     el.addEventListener('change', updateTaxFromUI);
+  });
+
+  container.querySelectorAll('.tax-rate').forEach(el => {
     el.addEventListener('input', updateTaxFromUI);
   });
 
@@ -294,11 +305,49 @@ function updateTaxFromUI(e) {
   if (isNaN(index) || index < 0 || index >= appliedTaxes.length) return;
 
   if (e.target.classList.contains('tax-type')) {
-    appliedTaxes[index].type = e.target.value;
+    const newType = e.target.value;
+    appliedTaxes[index].type = newType;
+
+    // Auto-set default rates
+    let defaultRate = 0;
+    switch (newType) {
+      case 'GST':
+        defaultRate = 5;   // GST is always 5%
+        break;
+      case 'ET':
+        defaultRate = 30;   // Excise Tax
+        break;
+      case 'CDA':
+        defaultRate = 0;   // CDA
+        break;
+      case 'VAT':
+        defaultRate = 13;  // VAT
+        break;
+      case 'OTHER':
+        defaultRate = 0;
+        break;
+      default:
+        defaultRate = 0;
+    }
+
+    // Only set if not manually edited
+    if (!appliedTaxes[index].manuallyEdited) {
+      appliedTaxes[index].rate = defaultRate;
+    }
+
+    // ✅ FORCE UPDATE THE INPUT FIELD VALUE
+    const rateInput = document.querySelector(`.tax-rate[data-index="${index}"]`);
+    if (rateInput) {
+      rateInput.value = appliedTaxes[index].rate;
+    }
+
   } else if (e.target.classList.contains('tax-rate')) {
+    // User manually edited rate → mark as customized
     appliedTaxes[index].rate = parseFloat(e.target.value) || 0;
+    appliedTaxes[index].manuallyEdited = true;
   }
-  renderCart();
+
+  renderCart(); // Recalculate totals immediately
 }
 
 function renderCart() {
@@ -336,7 +385,7 @@ function renderCart() {
     `;
   }).join('');
 
-  // Apply multiple taxes
+  // Calculate tax
   let taxableAmount = subtotal - totalDiscount;
   let totalTax = 0;
   appliedTaxes.forEach(tax => {
@@ -347,20 +396,14 @@ function renderCart() {
 
   const total = taxableAmount + totalTax;
 
-  // Update UI
-  const subtotalEl = document.getElementById('subtotalAmount');
-  const discountEl = document.getElementById('discountAmount');
-  const taxEl = document.getElementById('taxAmount');
-  const totalEl = document.getElementById('totalAmount');
+  // Update UI totals
+  document.getElementById('subtotalAmount').textContent = `₹${subtotal.toFixed(2)}`;
+  document.getElementById('discountAmount').textContent = `₹${totalDiscount.toFixed(2)}`;
+  document.getElementById('taxAmount').textContent = `₹${totalTax.toFixed(2)}`;
+  document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
 
-  if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toFixed(2)}`;
-  if (discountEl) discountEl.textContent = `₹${totalDiscount.toFixed(2)}`;
-  if (taxEl) taxEl.textContent = `₹${totalTax.toFixed(2)}`;
-  if (totalEl) totalEl.textContent = `₹${total.toFixed(2)}`;
-
-  // Update cash change
-  const paymentMethod = document.getElementById('paymentMethod')?.value;
-  if (paymentMethod === 'CASH') {
+  // Update cash change if needed
+  if (document.getElementById('paymentMethod')?.value === 'CASH') {
     calculateChange();
   }
 }
@@ -409,18 +452,16 @@ async function completeSale() {
   }
 
   const paymentMethod = document.getElementById('paymentMethod')?.value;
-
   if (paymentMethod === 'CASH') {
     const received = parseFloat(document.getElementById('amountReceived')?.value) || 0;
-    const totalText = document.getElementById('totalAmount')?.textContent || '₹0.00';
-    const total = parseFloat(totalText.replace('₹', '')) || 0;
+    const total = parseFloat(document.getElementById('totalAmount')?.textContent.replace('₹', '')) || 0;
     if (received < total) {
       alert('Insufficient amount received!');
       return;
     }
   }
 
-  // Calculate totals for request
+  // Calculate totals
   let subtotal = 0;
   let totalDiscount = 0;
   cart.forEach(item => {
@@ -435,7 +476,7 @@ async function completeSale() {
     customerPhone: document.getElementById('customerPhone')?.value || null,
     paymentMethod: paymentMethod,
     discountTotal: totalDiscount,
-    taxes: appliedTaxes.filter(t => t.type !== 'NONE'), // Send only active taxes
+    taxes: appliedTaxes.filter(t => t.type !== 'NONE'),
     items: cart.map(i => ({
       itemId: i.itemId,
       quantity: i.quantity,
@@ -460,9 +501,9 @@ async function completeSale() {
       document.getElementById('printInvoice')?.classList.remove('d-none');
       generateInvoicePreview(order);
 
-      // Reset
+      // Reset form
       cart = [];
-      appliedTaxes = [{ type: 'NONE', rate: 0 }];
+      appliedTaxes = [{ type: 'GST', rate: 5, manuallyEdited: false }];
       renderTaxBuilder();
       renderCart();
       document.getElementById('customerName').value = '';
@@ -481,9 +522,6 @@ async function completeSale() {
 }
 
 function generateInvoicePreview(order) {
-  const invoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
-  const preview = document.getElementById('invoicePreview');
-
   // Recalculate for invoice
   let subtotal = 0;
   let totalDiscount = 0;
@@ -533,6 +571,7 @@ function generateInvoicePreview(order) {
     `;
   });
 
+  const preview = document.getElementById('invoicePreview');
   preview.innerHTML = `
     <div class="invoice-header">
       <h4>INVOICE</h4>
@@ -582,6 +621,7 @@ function generateInvoicePreview(order) {
     </div>
   `;
 
+  const invoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
   invoiceModal.show();
 }
 
