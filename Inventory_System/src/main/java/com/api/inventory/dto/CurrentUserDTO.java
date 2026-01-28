@@ -21,12 +21,14 @@ public class CurrentUserDTO {
     private String phone;
 	@JsonProperty("role")
     private String role;
+	private Long roleId; 
 
     public CurrentUserDTO(String email, String name, String phone, String role) {
         this.email = email;
         this.name = name;
         this.phone = phone;
         this.role = role;
+        
     }
 
 	public String getEmail() {
@@ -59,6 +61,14 @@ public class CurrentUserDTO {
 
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	public Long getRoleId() {
+		return roleId;
+	}
+
+	public void setRoleId(Long roleId) {
+		this.roleId = roleId;
 	}
 
    

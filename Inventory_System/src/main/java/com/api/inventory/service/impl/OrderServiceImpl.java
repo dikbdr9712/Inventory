@@ -1,10 +1,10 @@
 package com.api.inventory.service.impl;
 
-import com.api.inventory.dto.ItemQty;
 import com.api.inventory.dto.OrderItemResponseDTO;
 import com.api.inventory.dto.OrderRequestDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
 import com.api.inventory.dto.PosSaleRequestDTO;
+import com.api.inventory.dto.PosSaleRequestDTO.ItemQty;
 import com.api.inventory.dto.TaxInfoDTO;
 import com.api.inventory.entity.*;
 import com.api.inventory.exception.OrderNotFoundException;

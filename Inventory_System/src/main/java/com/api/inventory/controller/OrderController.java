@@ -1,16 +1,11 @@
 package com.api.inventory.controller;
 
 import com.api.inventory.dto.OrderItemResponseDTO;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import com.api.inventory.dto.OrderRequestDTO;
+import com.api.inventory.dto.OrderResponseDTO;
 import com.api.inventory.dto.OrderVerificationDTO;
 import com.api.inventory.dto.PosSaleRequestDTO;
 import com.api.inventory.dto.ShipmentRequestDTO;
-import com.api.*;
 import com.api.inventory.dto.VerificationRequestDTO;
 import com.api.inventory.entity.ItemMaster;
 import com.api.inventory.entity.Order;
@@ -30,6 +25,10 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,51 +36,55 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class OrderController {
 
-	@Autowired
+    @Autowired
     private OrderService orderService;
-	@Autowired
+    @Autowired
     private PaymentService paymentService;
-	@Autowired
+    @Autowired
     private EmailService emailService;
 
     // Keep your existing repositories if used elsewhere (e.g., in createOrder logic)
     // If not used, you can remove these — but keeping for safety
-	@Autowired
+    @Autowired
     private OrderItemRepository orderItemRepository;
-	@Autowired
+    @Autowired
     private ItemMasterRepository itemMasterRepository;
 
-	@PostMapping("/pos/sale")
-	@PreAuthorize("hasAnyRole('ADMIN','MANAGER','CASHIER')")
-	public ResponseEntity<Order> createInPersonSale(@RequestBody PosSaleRequestDTO request) {
-	    Order order = orderService.createInPersonSale(request);
-	    return ResponseEntity.ok(order);
-	}
-	
-	
+    @PostMapping("/pos/sale")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','CASHIER')")
+    public ResponseEntity<Order> createInPersonSale(@RequestBody PosSaleRequestDTO request) {
+        Order order = orderService.createInPersonSale(request);
+        return ResponseEntity.ok(order);
+    }
+
     @PostMapping
     public Order createOrder(@RequestBody OrderRequestDTO dto) {
         return orderService.createOrder(dto);
     }
-    
+
     @PostMapping("/{orderId}/cancel")
     public void cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
     }
-    
+
     @GetMapping("/customer/{email}")
-    public List<Order> getOrdersByCustomer(@PathVariable String email) {
-        return orderService.getOrdersByCustomerEmail(email);
+    public List<OrderResponseDTO> getOrdersByCustomer(@PathVariable String email) {
+        List<Order> orders = orderService.getOrdersByCustomerEmail(email);
+        return orders.stream()
+                     .map(OrderResponseDTO::fromEntity)
+                     .toList();
     }
 
     @GetMapping("/{orderId}/items")
     public List<OrderItemResponseDTO> getOrderItems(@PathVariable Long orderId) {
         return orderService.getOrderItemsByOrderId(orderId);
     }
-    
+
+    // ✅ FIXED: Now returns OrderResponseDTO instead of Order
     @GetMapping("/{orderId}")
-    public Order getOrderById(@PathVariable Long orderId) {
-        return orderService.getOrderById(orderId);
+    public OrderResponseDTO getOrderById(@PathVariable Long orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return OrderResponseDTO.fromEntity(order);
     }
 
     // ⚠️ Note: This path overlaps with base /api/orders — consider removing "/orders"
@@ -90,7 +93,7 @@ public class OrderController {
         orderService.confirmPayment(orderId);
         return ResponseEntity.ok().build();
     }
-    
+
     @PutMapping("/{orderId}/verify")
     public ResponseEntity<Order> verifyOrder(
             @PathVariable Long orderId,
@@ -173,7 +176,7 @@ public class OrderController {
                 return "pending"; // fallback
         }
     }
-    
+
     @PostMapping("/{orderId}/confirm")
     public ResponseEntity<Order> confirmOrder(@PathVariable Long orderId) {
         String updatedBy = getCurrentUserEmail();
@@ -206,24 +209,25 @@ public class OrderController {
 
         return ResponseEntity.ok(updatedOrder);
     }
+
     @PostMapping("/{orderId}/ship")
     public ResponseEntity<Void> shipOrder(@PathVariable Long orderId) {
         String currentUser = getCurrentUserEmail();
         orderService.shipOrder(orderId, currentUser); // ✅ 2 args
         return ResponseEntity.ok().build();
     }
-    
+
     @PostMapping("/{orderId}/complete")
     public ResponseEntity<Void> completeOrder(@PathVariable Long orderId) {
         orderService.completeOrder(orderId);
         return ResponseEntity.ok().build();
     }
-    
+
     @GetMapping("/status/{status}")
     public List<OrderVerificationDTO> getOrdersForVerification(@PathVariable String status) {
         return orderService.getOrdersForVerification(status);
     }
-    
+
     @GetMapping("/api/test-auth")
     public String testAuth() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

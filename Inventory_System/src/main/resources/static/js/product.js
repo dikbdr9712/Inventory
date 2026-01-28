@@ -216,3 +216,47 @@ document.addEventListener('DOMContentLoaded', () => {
   init();
   updateCartBadge();
 });
+
+
+setTimeout(() => {
+    const loginLink = document.getElementById('loginLink');
+    const navList = document.querySelector('.navbar-nav.ml-auto');
+    
+    if (loginLink && navList) {
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      const userName = localStorage.getItem('userName');
+      
+      if (isLoggedIn && userName) {
+        loginLink.textContent = 'My Account';
+        loginLink.href = 'profile.html';
+        
+        // Add admin dropdown if needed
+        const userRole = localStorage.getItem('userRole')?.toUpperCase() || '';
+        const allowedRoles = ["ADMIN", "MANAGER", "CONTROLLER"];
+        if (allowedRoles.includes(userRole)) {
+          // Create admin dropdown here if needed
+          const existing = document.getElementById('admin-dropdown');
+          if (!existing) {
+            const dropdownLi = document.createElement('li');
+            dropdownLi.id = 'admin-dropdown';
+            dropdownLi.className = 'nav-item dropdown';
+            dropdownLi.innerHTML = `
+              <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" 
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-cogs"></i> Admin
+              </a>
+              <div class="dropdown-menu" aria-labelledby="adminDropdown">
+                <a class="dropdown-item" href="pos.html"><i class="fas fa-shopping-cart mr-2"></i> Point of Sale</a>
+                <a class="dropdown-item" href="pos-history.html"><i class="fas fa-history mr-2"></i> POS Sales History</a>
+                <a class="dropdown-item" href="SalesDashboard.html"><i class="fas fa-chart-line mr-2"></i> Sales Dashboard</a>
+                <a class="dropdown-item" href="order-list.html"><i class="fas fa-list mr-2"></i> Order List</a>
+                <a class="dropdown-item" href="OrderVerification.html"><i class="fas fa-check-circle mr-2"></i> Verify Payments</a>
+                <a class="dropdown-item" href="users.html"><i class="fas fa-user mr-2"></i> User Management</a>
+              </div>
+            `;
+            navList.appendChild(dropdownLi);
+          }
+        }
+      }
+    }
+  }, 800);

@@ -61,11 +61,17 @@ function updateNavbarForAuth() {
           <a class="dropdown-item" href="pos-history.html">
             <i class="fas fa-history mr-2"></i> POS Sales History
           </a>
+          <a class="dropdown-item" href="SalesDashboard.html">
+            <i class="fas fa-sale mr-2"></i> Sales Dashboard
+          </a>
           <a class="dropdown-item" href="order-list.html">
             <i class="fas fa-list mr-2"></i> Order List
           </a>
           <a class="dropdown-item" href="OrderVerification.html">
             <i class="fas fa-check-circle mr-2"></i> Verify Payments
+          </a>
+          <a class="dropdown-item" href="users.html">
+            <i class="fas fa-user mr-2"></i> User Management
           </a>
         </div>
       `;

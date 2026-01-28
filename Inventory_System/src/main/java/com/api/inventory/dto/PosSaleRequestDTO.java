@@ -48,5 +48,37 @@ public class PosSaleRequestDTO {
 		this.taxes = taxes;
 	}
     
-    
+	@Data
+	public static class ItemQty {
+	    private Long itemId;
+	    private Integer quantity;
+	    private java.math.BigDecimal discountPercent; // or BigDecimal
+	    private java.math.BigDecimal unitPrice;
+		public Long getItemId() {
+			return itemId;
+		}
+		public void setItemId(Long itemId) {
+			this.itemId = itemId;
+		}
+		public Integer getQuantity() {
+			return quantity;
+		}
+		public void setQuantity(Integer quantity) {
+			this.quantity = quantity;
+		}
+		public java.math.BigDecimal getDiscountPercent() {
+			return discountPercent;
+		}
+		public void setDiscountPercent(java.math.BigDecimal discountPercent) {
+			this.discountPercent = discountPercent;
+		}
+		public java.math.BigDecimal getUnitPrice() {
+			return unitPrice;
+		}
+		public void setUnitPrice(java.math.BigDecimal unitPrice) {
+			this.unitPrice = unitPrice;
+		} 
+	    
+	    
+	}
 }

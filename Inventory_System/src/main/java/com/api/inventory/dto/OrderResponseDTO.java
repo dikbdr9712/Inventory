@@ -1,0 +1,70 @@
+package com.api.inventory.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import com.api.inventory.entity.Order;
+
+public class OrderResponseDTO {
+	private Long orderId;
+    private String customerEmail;
+    private String orderStatus;
+    private String paymentStatus;
+    private BigDecimal totalAmount;
+    private LocalDateTime createdAt;
+    
+    
+	public Long getOrderId() {
+		return orderId;
+	}
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+	public String getCustomerEmail() {
+		return customerEmail;
+	}
+	public void setCustomerEmail(String customerEmail) {
+		this.customerEmail = customerEmail;
+	}
+	public String getOrderStatus() {
+		return orderStatus;
+	}
+	public void setOrderStatus(String orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+	public String getPaymentStatus() {
+		return paymentStatus;
+	}
+	public void setPaymentStatus(String paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+	public BigDecimal getTotalAmount() {
+		return totalAmount;
+	}
+	public void setTotalAmount(BigDecimal totalAmount) {
+		this.totalAmount = totalAmount;
+	}
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+    
+    
+	
+	public static OrderResponseDTO fromEntity(Order order) {
+	    if (order == null) {
+	        return null;
+	    }
+	    OrderResponseDTO dto = new OrderResponseDTO();
+	    dto.setOrderId(order.getOrderId());
+	    dto.setCustomerEmail(order.getCustomerEmail());
+	    dto.setOrderStatus(order.getOrderStatus());
+	    dto.setPaymentStatus(order.getPaymentStatus());
+	    dto.setTotalAmount(order.getTotalAmount());
+	    dto.setCreatedAt(order.getCreatedAt());
+	    return dto;
+	}
+
+}

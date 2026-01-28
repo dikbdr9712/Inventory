@@ -4,6 +4,15 @@ let currentOrder = null;
 let highlightedIndex = -1;
 let appliedTaxes = []; // Supports multiple taxes: [{ type: 'GST', rate: 5 }, { type: 'ET', rate: 2 }]
 
+function showError(message) {
+  // Show alert (you can replace with Bootstrap toast later)
+  alert(`❌ Error: ${message}`);
+}
+
+function showSuccess(message) {
+  alert(message);
+}
+
 // Load all items on page load
 async function loadItems() {
   try {
@@ -447,21 +456,30 @@ function calculateChange() {
 
 async function completeSale() {
   if (cart.length === 0) {
-    alert('Add at least one item!');
+    showError('⚠️ Please add at least one item to the cart.');
     return;
   }
 
   const paymentMethod = document.getElementById('paymentMethod')?.value;
   if (paymentMethod === 'CASH') {
     const received = parseFloat(document.getElementById('amountReceived')?.value) || 0;
-    const total = parseFloat(document.getElementById('totalAmount')?.textContent.replace('₹', '')) || 0;
+    const totalText = document.getElementById('totalAmount')?.textContent || '₹0.00';
+    const total = parseFloat(totalText.replace('₹', '')) || 0;
     if (received < total) {
-      alert('Insufficient amount received!');
+      showError(`❌ Insufficient amount received! You entered ₹${received.toFixed(2)}, but total is ₹${total.toFixed(2)}.`);
       return;
     }
   }
 
-  // Calculate totals
+  // ✅ Ensure every cart item has price (critical for backend)
+  const hasMissingPrice = cart.some(item => item.price == null || isNaN(item.price) || item.price <= 0);
+  if (hasMissingPrice) {
+    showError("⚠️ Some items have missing or invalid prices. Please reload items or check data.");
+    console.warn("Cart items with missing price:", cart.filter(i => !i.price || isNaN(i.price)));
+    return;
+  }
+
+  // Build request
   let subtotal = 0;
   let totalDiscount = 0;
   cart.forEach(item => {
@@ -480,9 +498,15 @@ async function completeSale() {
     items: cart.map(i => ({
       itemId: i.itemId,
       quantity: i.quantity,
-      discountPercent: i.discountPercent || 0
+      discountPercent: i.discountPercent || 0,
+      unitPrice: i.price
     }))
   };
+
+  // Disable button to prevent double-click
+  const btn = document.getElementById('completeSale');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Processing...';
 
   try {
     const res = await fetch('http://localhost:8080/api/orders/pos/sale', {
@@ -496,7 +520,7 @@ async function completeSale() {
       const order = await res.json();
       currentOrder = order;
 
-      alert(`✅ Sale completed! Order #${order.orderId}`);
+      showSuccess(`✅ Sale completed! Order #${order.orderId}`);
 
       document.getElementById('printInvoice')?.classList.remove('d-none');
       generateInvoicePreview(order);
@@ -513,11 +537,36 @@ async function completeSale() {
       document.getElementById('cashChangeSection')?.classList.add('d-none');
 
     } else {
-      const err = await res.text();
-      alert('Failed: ' + err);
+      // 🔍 Handle specific error types
+      const contentType = res.headers.get('content-type');
+      let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await res.json();
+        // Prefer backend message if available
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        
+        // Special handling for known cases
+        if (errorMessage.includes('Price missing for item')) {
+          errorMessage = `❌ Price missing for item: "${errorData.message?.split(': ')[1] || 'Unknown'}".\n\nPlease ensure all items are loaded correctly.`;
+        } else if (errorMessage.includes('Invalid Order State')) {
+          errorMessage = `⚠️ Invalid order state: ${errorMessage}`;
+        }
+      } else {
+        errorMessage = await res.text() || errorMessage;
+      }
+
+      showError(errorMessage);
+      console.error('Sale failed:', { status: res.status, response: errorData || 'non-JSON' });
     }
+
   } catch (e) {
-    alert('Error: ' + e.message);
+    showError(` network error: ${e.message}\n\nCheck if server is running.`);
+    console.error('Network/JS error in completeSale:', e);
+  } finally {
+    // Re-enable button
+    btn.disabled = false;
+    btn.innerHTML = '✅ Complete Sale';
   }
 }
 

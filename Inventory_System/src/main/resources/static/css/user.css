@@ -1,0 +1,11 @@
+.role-badge {
+      font-size: 0.85em;
+      padding: 0.3em 0.6em;
+    }
+    .table th {
+      background-color: #f8f9fa;
+    }
+    .spinner {
+      width: 1rem;
+      height: 1rem;
+    }
